@@ -237,33 +237,9 @@ and open the template in the editor.
             <button id="draw_scatterplot" style="float:left;margin-left:5px;">Draw Scatterplot</button>
             <div style="float:left; margin-left: 15px">X axis:</div>
             <select id="axisOptions_x" style="width:170px;float:left;margin-left: 5px">
-                <option value="avg_global">ave_global</option>
-                <option value="avg_trop">ave_trop</option>
-                <option value="avg_NH">ave_NH</option>
-                <option value="avg_SH">ave_SH</option>
-                <option value="avg_polar">ave_polar</option>
-                <option value="avg_US">ave_US</option>
-                <option value="max_global">max_global</option>
-                <option value="max_trop">max_trop</option>
-                <option value="max_NH">max_NH</option>
-                <option value="max_SH">max_SH</option>
-                <option value="max_polar">max_polar</option>
-                <option value="max_US">max_US</option>
             </select>
             <div style="float:left; margin-left: 5px">Y axis:</div>
             <select id="axisOptions_y" style="width:170px;float:left; margin-left: 5px">
-                <option value="avg_global">ave_global</option>
-                <option value="avg_trop">ave_trop</option>
-                <option value="avg_NH">ave_NH</option>
-                <option value="avg_SH">ave_SH</option>
-                <option value="avg_polar">ave_polar</option>
-                <option value="avg_US">ave_US</option>
-                <option value="max_global">max_global</option>
-                <option value="max_trop">max_trop</option>
-                <option value="max_NH">max_NH</option>
-                <option value="max_SH">max_SH</option>
-                <option value="max_polar">max_polar</option>
-                <option value="max_US">max_US</option>
             </select>
             <button id="scatterPlot_option" class="zoom" style="float:left;margin-left:15px;">Enable drag-selection</button>
             <div style="float:left; margin-left: 150px">Number of Architectures:</div>
@@ -339,311 +315,253 @@ and open the template in the editor.
 //            });
 
 
-            var margin = {top: 20, right: 20, bottom: 30, left: 60},
-            width = 960 - margin.left - margin.right,
-                    height = 540 - margin.top - margin.bottom;
+var margin = {top: 20, right: 20, bottom: 30, left: 60},
+width = 960 - margin.left - margin.right,
+        height = 540 - margin.top - margin.bottom;
 
-            var jsonObj_scatterPlot;
-            var json_arch;
-            var svg,objects;
-            
-            
-            var xValue, xScale, xMap, xAxis, xBuffer, yBuffer,
-                    yValue, yScale, yMap, yAxis;
+var jsonObj_scatterPlot;
+var json_arch;
+var svg,objects;
 
-            var x_axis,y_axis;
-            
-            var color_drivingFeatures = d3.scale.category10();        
-            var i_drivingFeatures=0;
-            var filter_arch;
-            var modified_filterArch;
 
-            var translate_tmp = [0,0];
-            var scale_tmp = 0;
-            var translate_tmp_local = [0,0];
-            var scale_tmp_local = 0;
-            
-            var filterDropdownOptions = [{value:"not_selected",text:"Preset Filters"},{value:"paretoFront",text:"Pareto front"},
-                {value:"present",text:"Present"},{value:"absent",text:"Absent"},{value:"inOrbit",text:"In orbit"},
-                {value:"notInOrbit",text:"Not in orbit"},{value:"together",text:"Together"},
-                {value:"togetherInOrbit",text:"Together in orbit"},{value:"separate",text:"Separate"},
-                {value:"emptyOrbit",text:"Empty orbit"},{value:"numOrbitUsed",text:"Number of orbit used"},
-                {value:"subsetOfInstruments",text:"Num of instruments in a subset"},{value:"defineNewFilter",text:"Define new filter"}];
-            
-            var userDefFilterExpressionHistory = [];
-            userDefFilterExpressionHistory.length=0;
-            var userDefFilters = [];
-            
-            var jsonObj_tree;
-            
-            var scatterPlot_loaded_for_first_time = true;
-            
-            // inputs: NSAT, NPLANE, ALT, INC, RAAN, FOV
-            var NSAT_min=9999, NSAT_max=-9999, NPLANE_min=9999, NPLANE_max=-9999, 
-                    ALT_min=9999, ALT_max=-9999, INC_min=9999, INC_max=-9999, 
-                    RAAN_min=9999, RAAN_max=-9999, FOV_min=9999, FOV_max=-9999;
-            
-            
-            var candidateDrivingFeatures = [];
-            var candidateDrivingFeatures_names = [];
-            var presetGenerated = false;
-            var olddata;
-            
-            try {
+var xValue, xScale, xMap, xAxis, xBuffer, yBuffer,
+        yValue, yScale, yMap, yAxis;
 
-            function newDataFromResultFile(){
-                
-                if (scatterPlot_loaded_for_first_time===false){
-                    reset_drawing_scatterPlot();
-                    draw_scatterPlot(jsonObj_scatterPlot);
-                }else{
-                
+var x_axis,y_axis;
+
+var color_drivingFeatures = d3.scale.category10();        
+var i_drivingFeatures=0;
+var filter_arch;
+var modified_filterArch;
+
+var translate_tmp = [0,0];
+var scale_tmp = 0;
+var translate_tmp_local = [0,0];
+var scale_tmp_local = 0;
+
+var filterDropdownOptions = [{value:"not_selected",text:"Preset Filters"},{value:"paretoFront",text:"Pareto front"},
+    {value:"present",text:"Present"},{value:"absent",text:"Absent"},{value:"inOrbit",text:"In orbit"},
+    {value:"notInOrbit",text:"Not in orbit"},{value:"together",text:"Together"},
+    {value:"togetherInOrbit",text:"Together in orbit"},{value:"separate",text:"Separate"},
+    {value:"emptyOrbit",text:"Empty orbit"},{value:"numOrbitUsed",text:"Number of orbit used"},
+    {value:"subsetOfInstruments",text:"Num of instruments in a subset"},{value:"defineNewFilter",text:"Define new filter"}];
+
+var userDefFilterExpressionHistory = [];
+userDefFilterExpressionHistory.length=0;
+var userDefFilters = [];
+
+var jsonObj_tree;
+
+var scatterPlot_loaded_for_first_time = true;
+
+var candidateDrivingFeatures = [];
+var candidateDrivingFeatures_names = [];
+var presetGenerated = false;
+var olddata;
+
+var nInputs, nOutputs, inputNames, outputNames;
+
+
+
+try {
+
+function newDataFromResultFile(){
+
+    if (scatterPlot_loaded_for_first_time===false){
+        reset_drawing_scatterPlot();
+        draw_scatterPlot(jsonObj_scatterPlot);
+    }else{
+
 //                testType = d3.select("[id=resultFileURL]")[0][0].value;
-                    $.ajax(
-                            {
-                                url: "resultsGUIServlet",
-                                type: "POST",
-                                data: {ID: "resultFileURL_newData"},
-                                async: false,
-                                success: function (data, textStatus, jqXHR)
-                                {
-                                    
-                                    jsonObj_scatterPlot = JSON.parse(data);
-                                },
-                                complete: function () {
-                                    
-                                    jsonObj_scatterPlot.forEach(function (d) {  // convert string to numbers
-                                        // inputs: NSAT, NPLANE, ALT, INC, RAAN, FOV
-                                        // objectives: avg_global, avg_trop, avg_NH, avg_SH, avg_polar, avg_US, max_global, max_trop, max_NH, max_SH, max_polar, max_US
-                                        d.NSAT = +d.inputs[0];
-                                        d.NPLANE = +d.inputs[1];
-                                        d.ALT = +d.inputs[2];
-                                        d.INC = +d.inputs[3];
-                                        d.RAAN = +d.inputs[4];
-                                        d.FOV = +d.inputs[5];
-                                        d.avg_global = +d.objectives[0];
-                                        d.avg_trop = +d.objectives[1];
-                                        d.avg_NH = +d.objectives[2];
-                                        d.avg_SH = +d.objectives[3];
-                                        d.avg_polar = +d.objectives[4];
-                                        d.avg_US = +d.objectives[5];
-                                        d.max_global = +d.objectives[6];
-                                        d.max_trop = +d.objectives[7];
-                                        d.max_NH = +d.objectives[8];
-                                        d.max_SH = +d.objectives[9];
-                                        d.max_polar = +d.objectives[10];
-                                        d.max_US = +d.objectives[11];
-                                        if(d.NSAT>NSAT_max){
-                                            NSAT_max = d.NSAT;
-                                        } else if (d.NSAT<NSAT_min){
-                                            NSAT_min = d.NSAT;
-                                        }
-                                        if(d.NPLANE>NPLANE_max){
-                                            NPLANE_max = d.NPLANE;
-                                        } else if (d.NPLANE<NPLANE_min){
-                                            NPLANE_min = d.NPLANE;
-                                        }
-                                        if(d.ALT>ALT_max){
-                                            ALT_max = d.ALT;
-                                        } else if (d.ALT<ALT_min){
-                                            ALT_min = d.ALT;
-                                        }
-                                        if(d.INC>INC_max){
-                                            INC_max = d.INC;
-                                        } else if (d.INC<INC_min){
-                                            INC_min = d.INC;
-                                        }
-                                        if(d.RAAN>RAAN_max){
-                                            RAAN_max = d.RAAN;
-                                        } else if (d.RAAN<RAAN_min){
-                                            RAAN_min = d.RAAN;
-                                        }
-                                        if(d.FOV>FOV_max){
-                                            FOV_max = d.FOV;
-                                        } else if (d.FOV<FOV_min){
-                                            FOV_min = d.FOV;
-                                        }
-                                        
-                                    });
-                                    reset_drawing_scatterPlot();
-                                    draw_scatterPlot(jsonObj_scatterPlot);
-                                  scatterPlot_loaded_for_first_time = false; 
-    //                                d3.select("[id=basicInfoBox_div]").select("g").remove();
-                                },
-                                error: function (jqXHR, textStatus, errorThrown)
-                                {
-                                    alert("error");
-                                }
-                            });
-                }
-            }
-            
-            
-            function addDataFromResultFile(){
-                var filePath = "C:\\Users\\Bang\\Documents\\IDETC_2016\\results\\3.rs";
-                $.ajax(
-                        {
-                            url: "resultsGUIServlet",
-                            type: "POST",
-                            data: {ID: "resultFileURL_addData", filePath:filePath},
-                            async: false,
-                            success: function (data, textStatus, jqXHR)
-                            {
-                                jsonObj_scatterPlot = JSON.parse(data);
-                            },
-                            complete: function () {
-                                reset_drawing_scatterPlot();
-                                draw_scatterPlot(jsonObj_scatterPlot);
-                                
+        $.ajax(
+                {
+                    url: "resultsGUIServlet",
+                    type: "POST",
+                    data: {ID: "resultFileURL_newData"},
+                    async: false,
+                    success: function (data, textStatus, jqXHR)
+                    {
+
+                        jsonObj_scatterPlot = JSON.parse(data);
+                    },
+                    complete: function () {
+                        
+                        nInputs = jsonObj_scatterPlot[0].inputs.length;
+                        nOutputs = jsonObj_scatterPlot[0].outputs.length;
+                        inputNames = jsonObj_scatterPlot[0].inputNames;
+                        outputNames = jsonObj_scatterPlot[0].outputNames;
+                        
+                        d3.select("[id=axisOptions_x]").selectAll("option")
+                                .data(outputNames)
+                                .enter()
+                                .append("option")
+                                .attr("value",function(d){
+                                    return d
+                                })
+                                .text(function(d){return d});
+                        d3.select("[id=axisOptions_y]").selectAll("option")
+                                .data(outputNames)
+                                .enter()
+                                .append("option")
+                                .attr("value",function(d){
+                                    return d
+                                })
+                                .text(function(d){return d});
+                        
+                        reset_drawing_scatterPlot();
+                        draw_scatterPlot(jsonObj_scatterPlot);
+                        scatterPlot_loaded_for_first_time = false; 
                                 d3.select("[id=basicInfoBox_div]").select("g").remove();
-                            },
-                            error: function (jqXHR, textStatus, errorThrown)
-                            {
-                                alert("error");
-                            }
-                        });
-            }
-
-
-                function draw_archBasicInfoTable(data) {
-
-                    d3.select("[id=basicInfoBox_div]")
-                            .select("g").select("table").remove();
-
-                    var archInfoBox = d3.select("[id=basicInfoBox_div]")
-                            .select("g");
-
-                    var input_table = archInfoBox.append("table")
-                            .attr("id", "archInfo_input_table")
-                            .style("float","left")
-                            .style("border-collapse","collapse")
-                            .style("border","1px solid black")
-                            .style("margin-left","20px")
-                            .style("margin-top","10px")
-                            .style("margin-right","10px");
-                    
-                    var columns = [];
-                    columns.push({columnName: "NSAT"});
-                    columns.push({columnName: "NPLANE"});
-                    columns.push({columnName: "ALT"});
-                    columns.push({columnName: "INC"});
-                    columns.push({columnName: "RAAN"});
-                    columns.push({columnName: "FOV"});
-
-                    // create table header
-                    input_table.append('thead').append('tr')
-                            .selectAll('th')
-                            .data(columns).enter()
-                            .append('th')
-                            .text(function (d) {
-                                return d.columnName;
-                            })
-                            .attr("width","80px")
-                            .style("background-color", function (d) {
-                                    return "#D0D0D0";
-                            })
-                            .style("border","1px solid black")
-                            .style("font-size", "20px");
+                    },
+                    error: function (jqXHR, textStatus, errorThrown)
+                    {
+                        alert("error");
+                    }
+                });
+    }
+}
 
 
 
+    function draw_archBasicInfoTable(data) {
 
-                    
-                    // create table body
-                    input_table.append('tbody')
-                            .append('tr')
-                            .selectAll('td')
-                            .data(data.inputs)
-                            .enter()
-                            .append('td')
-                            .text(function (d) {
-                                return d;
-                            })
-                            .attr("width","80px")
-                            .style("border","1px solid black")
-                            .style("font-size", "18px");
-                    
-         
-                    var objective_table = archInfoBox.append("table")
-                                                    .attr("id", "archInfo_objective_table")
-                                                    .style("float","left")
-                                                    .style("margin-left","20px")
-                                                    .style("margin-top","10px")
-                                                    .style("border-collapse","collapse")
-                                                    .style("border","1px solid black");
+        d3.select("[id=basicInfoBox_div]")
+                .select("g").select("table").remove();
 
-                    var columns = [];
-                    columns.push({columnName: "Objective"});
-                    columns.push({columnName: "Value"});
-                    columns.push({columnName: "Objective"});
-                    columns.push({columnName: "Value"});
-                    
-                    // create table header
-                    objective_table.append('thead').append('tr')
-                            .selectAll('th')
-                            .data(columns).enter()
-                            .append('th')
-                            .text(function (d) {
-                                return d.columnName;
-                            })
-                            .style("background-color", function (d) {
-                                    return "#D0D0D0";
-                            })
-                            .attr("width","120px")
-                            .style("border","1px solid black")
-                            .style("font-size", "20px");
-                            
-                    var rows = [];
-                    rows.push({name1:"avg_global",val1:data.objectives[0],name2:"max_global",val2:data.objectives[6]});
-                    rows.push({name1:"avg_trop",val1:data.objectives[1],name2:"max_trop",val2:data.objectives[7]});
-                    rows.push({name1:"avg_NH",val1:data.objectives[2],name2:"max_NH",val2:data.objectives[8]});
-                    rows.push({name1:"avg_SH",val1:data.objectives[3],name2:"max_SH",val2:data.objectives[9]});
-                    rows.push({name1:"avg_polar",val1:data.objectives[4],name2:"max_poar",val2:data.objectives[10]});
-                    rows.push({name1:"avg_US",val1:data.objectives[5],name2:"max_US",val2:data.objectives[11]});
-                    
-                    // create table body
-                    objective_table.append('tbody')
-                            .selectAll('tr')
-                            .data(rows).enter()
-                            .append('tr')
-                            .selectAll('td')
-                            .data(function(row,i){
-                                var thisRow = [];
-                                thisRow.push({content:row.name1});
-                                thisRow.push({content:row.val1});
-                                thisRow.push({content:row.name2});
-                                thisRow.push({content:row.val2});
-                                return thisRow;
-                            })
-                            .enter()
-                            .append('td')
-                            .text(function(d){
-                                return d.content;
-                            })
-                            .attr("width","120px")
-                            .style("border","1px solid black");
-                    
+        var archInfoBox = d3.select("[id=basicInfoBox_div]")
+                .select("g");
 
-                    
+        var input_table = archInfoBox.append("table")
+                .attr("id", "archInfo_input_table")
+                .style("float","left")
+                .style("border-collapse","collapse")
+                .style("border","1px solid black")
+                .style("margin-left","20px")
+                .style("margin-top","10px")
+                .style("margin-right","10px");
 
-                }
+        var columns = [];
+        columns.push({columnName: "NSAT"});
+        columns.push({columnName: "NPLANE"});
+        columns.push({columnName: "ALT"});
+        columns.push({columnName: "INC"});
+        columns.push({columnName: "RAAN"});
+        columns.push({columnName: "FOV"});
 
-                function numOfArchs(){
-                    var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
-                    return leng;
-                }
-                function numOfSelectedArchs(){
-                    return d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();
-                }
+        // create table header
+        input_table.append('thead').append('tr')
+                .selectAll('th')
+                .data(columns).enter()
+                .append('th')
+                .text(function (d) {
+                    return d.columnName;
+                })
+                .attr("width","80px")
+                .style("background-color", function (d) {
+                        return "#D0D0D0";
+                })
+                .style("border","1px solid black")
+                .style("font-size", "20px");
 
 
-            d3.select("[id=draw_scatterplot]").on("click", newDataFromResultFile);
-//            d3.select("[id=resultFileURL_addData]").on("click", addDataFromResultFile);
 
 
-            } catch (err) {
-                console.log(err.message);
-            }
+
+        // create table body
+        input_table.append('tbody')
+                .append('tr')
+                .selectAll('td')
+                .data(data.inputs)
+                .enter()
+                .append('td')
+                .text(function (d) {
+                    return d;
+                })
+                .attr("width","80px")
+                .style("border","1px solid black")
+                .style("font-size", "18px");
+
+
+        var objective_table = archInfoBox.append("table")
+                                        .attr("id", "archInfo_objective_table")
+                                        .style("float","left")
+                                        .style("margin-left","20px")
+                                        .style("margin-top","10px")
+                                        .style("border-collapse","collapse")
+                                        .style("border","1px solid black");
+
+        var columns = [];
+        columns.push({columnName: "Objective"});
+        columns.push({columnName: "Value"});
+        columns.push({columnName: "Objective"});
+        columns.push({columnName: "Value"});
+
+        // create table header
+        objective_table.append('thead').append('tr')
+                .selectAll('th')
+                .data(columns).enter()
+                .append('th')
+                .text(function (d) {
+                    return d.columnName;
+                })
+                .style("background-color", function (d) {
+                        return "#D0D0D0";
+                })
+                .attr("width","120px")
+                .style("border","1px solid black")
+                .style("font-size", "20px");
+
+        var rows = [];
+        rows.push({name1:"avg_global",val1:data.objectives[0],name2:"max_global",val2:data.objectives[6]});
+        rows.push({name1:"avg_trop",val1:data.objectives[1],name2:"max_trop",val2:data.objectives[7]});
+        rows.push({name1:"avg_NH",val1:data.objectives[2],name2:"max_NH",val2:data.objectives[8]});
+        rows.push({name1:"avg_SH",val1:data.objectives[3],name2:"max_SH",val2:data.objectives[9]});
+        rows.push({name1:"avg_polar",val1:data.objectives[4],name2:"max_poar",val2:data.objectives[10]});
+        rows.push({name1:"avg_US",val1:data.objectives[5],name2:"max_US",val2:data.objectives[11]});
+
+        // create table body
+        objective_table.append('tbody')
+                .selectAll('tr')
+                .data(rows).enter()
+                .append('tr')
+                .selectAll('td')
+                .data(function(row,i){
+                    var thisRow = [];
+                    thisRow.push({content:row.name1});
+                    thisRow.push({content:row.val1});
+                    thisRow.push({content:row.name2});
+                    thisRow.push({content:row.val2});
+                    return thisRow;
+                })
+                .enter()
+                .append('td')
+                .text(function(d){
+                    return d.content;
+                })
+                .attr("width","120px")
+                .style("border","1px solid black");
+
+
+
+
+    }
+
+    function numOfArchs(){
+        var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
+        return leng;
+    }
+    function numOfSelectedArchs(){
+        return d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();
+    }
+
+
+d3.select("[id=draw_scatterplot]").on("click", newDataFromResultFile);
+
+
+
+} catch (err) {
+    console.log(err.message);
+}
         </script>
     </body>
 </html>

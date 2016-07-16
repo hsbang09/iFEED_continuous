@@ -54,7 +54,6 @@ function loadCandidateDrivingFeaturesWindow() {
     window.open('drivingFeatures.html');
 }
 
-
 function display_feature_option(){
 
     d3.select("[id=basicInfoBox_div]").select("g").remove();

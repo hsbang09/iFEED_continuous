@@ -4,8 +4,6 @@
  * and open the template in the editor.
  */
 
-
-
 function reset_drawing_scatterPlot() {
     d3.select("[id=scatterPlotFigure]").selectAll("svg").remove();
 }
@@ -17,13 +15,13 @@ function draw_scatterPlot(source) {
 
     // setup x 
     xValue = function (d) {
-        return get_objective_value(x_axis,d);
+        return get_output_value(x_axis,d);
     }; // data -> value
     xScale = d3.scale.linear().range([0, width]); // value -> display
     //
     // don't want dots overlapping axis, so add in buffer to data domain 
-    xBuffer = (d3.max(source, xValue) - d3.min(source, xValue)) * 0.05;
-    xScale.domain([d3.min(source, xValue) - xBuffer, d3.max(source, xValue) + xBuffer]);
+    xBuffer = (get_max_output_value(x_axis,source) - get_min_output_value(x_axis,source)) * 0.05;
+    xScale.domain([get_min_output_value(x_axis,source) - xBuffer, get_max_output_value(x_axis,source) + xBuffer]);
 
     xMap = function (d) {
         return xScale(xValue(d));
@@ -34,12 +32,12 @@ function draw_scatterPlot(source) {
 
     // setup y
     yValue = function (d) {
-        return get_objective_value(y_axis,d);
+        return get_output_value(y_axis,d);
     }; // data -> value
     yScale = d3.scale.linear().range([height, 0]); // value -> display
 
-    yBuffer = (d3.max(source, yValue) - d3.min(source, yValue)) * 0.05;
-    yScale.domain([d3.min(source, yValue) - yBuffer, d3.max(source, yValue) + yBuffer]);
+    yBuffer = (get_max_output_value(y_axis,source) - get_min_output_value(y_axis,source)) * 0.05;
+    yScale.domain([get_min_output_value(y_axis,source) - yBuffer, get_max_output_value(y_axis,source) + yBuffer]);
 
     yMap = function (d) {
         return yScale(yValue(d));
@@ -172,51 +170,37 @@ function draw_scatterPlot(source) {
             });
     dots.on("click", dot_click);
 
-//    if(testType==="1"){
-//        d3.select("[id=getDrivingFeaturesSetting_div]").remove();
-//        d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").append("div")
-//                .attr("id","getDrivingFeaturesSetting_div")
-//                .append("button")
-//                .attr("id","openFilterOptions")
-//                .text("Open Filter Options");
-//        d3.select("[id=scatterPlot_option]").remove();
+//    d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
+//    d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
+//    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
+//    d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
+//    d3.select("[id=hide_selection]").on("click",hideSelections);
+//    d3.select("[id=show_all_archs]").on("click",showAllArchs);
+//    d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
+//    d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
+//    d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
+//    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
+//    d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
+//    if (presetGenerated === false){
+//        generatePresetCandidateDF();
 //    }
-//    else if(testType==="2"){
-//        d3.select("[id=getClassificationTreeButton]").remove();
-//    } else if(testType==="3"){
-//    } else if(testType==="4"){
-//        d3.select("[id=lift_threshold_input]")[0][0].value = 0;
-//        d3.select("[id=getDrivingFeaturesSetting_div]").select("[id=getClassificationTreeButton]").remove();
-//        d3.select("[id=scatterPlot_option]").remove();
-//        d3.select("[id=dfsort_options]").remove();
-//    }
-
-//    if(testType==="4"){
-//        d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures_automated);
-//    } else{
-        d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
-//    }
-    d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
-    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
-    d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
-    d3.select("[id=hide_selection]").on("click",hideSelections);
-    d3.select("[id=show_all_archs]").on("click",showAllArchs);
-    d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
-    d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
-    d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
-    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
-    d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
-    if (presetGenerated === false){
-        generatePresetCandidateDF();
-    }
     
 //    d3.selectAll("[class=dot]")[0].forEach(function(d,i){
 //        d3.select(d).attr("paretoRank",-1);
 //    });
-
 //    calculateParetoRanking();
 //    drawParetoFront();
    
+   
+   
+   d3.select("[id=axisOptions_x]").on("change",function(){
+        reset_drawing_scatterPlot();
+        draw_scatterPlot(jsonObj_scatterPlot);
+   });
+   d3.select("[id=axisOptions_y]").on("change",function(){
+        reset_drawing_scatterPlot();
+        draw_scatterPlot(jsonObj_scatterPlot);
+   });
 }
 
 
@@ -514,8 +498,8 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
                     if(option=="selection"){
                         dots = d3.selectAll("[class=dot]")[0].forEach(function(d,i){
                             
-                            var x = get_objective_value(x_axis,d.__data__);
-                            var y = get_objective_value(y_axis,d.__data__);
+                            var x = get_output_value(x_axis,d.__data__);
+                            var y = get_output_value(y_axis,d.__data__);
                             var xCoord = xScale(x);
                             var yCoord = yScale(y);
 
@@ -530,8 +514,8 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
 
                     }else{
                         dots = d3.selectAll("[class=dot_clicked]")[0].forEach(function(d,i){
-                            var x = get_objective_value(x_axis,d.__data__);
-                            var y = get_objective_value(y_axis,d.__data__);
+                            var x = get_output_value(x_axis,d.__data__);
+                            var y = get_output_value(y_axis,d.__data__);
                             var xCoord = xScale(x);
                             var yCoord = yScale(y);
 
@@ -562,242 +546,41 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
 }
 
 
-function get_objective_value(axis,d){
-    if(axis==="avg_global"){return d.avg_global;}
-    else if(axis==="avg_trop"){return d.avg_trop;}
-    else if(axis==="avg_NH"){return d.avg_NH;}
-    else if(axis==="avg_SH"){return d.avg_SH;}
-    else if(axis==="avg_polar"){return d.avg_polar;}
-    else if(axis==="avg_US"){return d.avg_US;}
-    else if(axis==="max_global"){return d.max_global;}
-    else if(axis==="max_trop"){return d.max_trop;}
-    else if(axis==="max_NH"){return d.max_NH;}
-    else if(axis==="max_SH"){return d.max_SH;}
-    else if(axis==="max_polar"){return d.max_polar;}
-    else if(axis==="max_US"){return d.max_US;}
+
+
+
+
+function get_max_output_value(varName,d){
+    var array =[];
+    var index = find_output_index(varName);
+    for (var i=0;i<d.length;i++){
+        array.push(d[i].outputs[index]);
+    }
+    return Math.max.apply(Math, array);
+}
+function get_min_output_value(varName,d){
+    var array =[];
+    var index = find_output_index(varName);
+    for (var i=0;i<d.length;i++){
+        array.push(d[i].outputs[index]);
+    }
+    return Math.min.apply(Math, array);
 }
 
 
-//function drawParetoFront(){
-//
-//    var archsInParetoFront = d3.selectAll("[class=dot]")[0].filter(function(d){
-//        if(d3.select(d).attr("paretoRank")=="1"){
-//            return true;
-//        }
-//    });
-//
-//    var sortedScoreList = []; sortedScoreList.length=0;
-//    var sortedArchList = []; sortedArchList.length=0;
-//
-//    var size = archsInParetoFront.length;
-//
-//    for(var i=0;i<size;i++){
-//        var thisScore = archsInParetoFront[i].__data__.science;
-//        var tmp = {
-//                cost: archsInParetoFront[i].__data__.cost,
-//                sci: archsInParetoFront[i].__data__.science
-//        };
-//
-//        if(sortedScoreList.length==0){
-//            sortedScoreList.push(thisScore);
-//            sortedArchList.push(tmp);
-//        }else{
-//            var sortedLength = sortedScoreList.length;
-//            for(var j=0;j<sortedLength;j++){
-//                if(thisScore > sortedScoreList[j]){
-//                    break;
-//                }
-//            }
-//            sortedScoreList.splice(j, 0, thisScore);
-//            sortedArchList.splice(j, 0, tmp);
-//        }
-//    }
-//
-//    var lines = []; lines.length=0;
-//    for (var i=1;i<size;i++){
-//        var line = {
-//            x1: xScale(sortedArchList[i-1].sci),
-//            x2: xScale(sortedArchList[i].sci),
-//            y1: yScale(sortedArchList[i-1].cost),
-//            y2: yScale(sortedArchList[i].cost) 
-//        };
-//        lines.push(line);
-//    }
-//
-//    d3.select("[id=scatterPlotFigure]").select("svg")
-//            .select("[class=objects]")
-//            .selectAll("[class=paretoFrontier]")
-//            .data(lines)
-//            .enter()
-//            .append("line")
-//            .attr("class","paretoFrontier")
-//            .attr("stroke-width", 1.5)
-//            .attr("stroke", "#D00F0F")
-//            .attr("x1",function(d){
-//                return d.x1;
-//            })
-//            .attr("x2",function(d){
-//                return d.x2;
-//            })
-//            .attr("y1",function(d){
-//                return d.y1;
-//            })
-//            .attr("y2",function(d){
-//                return d.y2;
-//            });
-//                                    var dots = objects.selectAll(".dot")
-//                            .data(source)
-//                            .enter().append("circle")
+function find_output_index(varName){
+    var ind = 0;
+    for(var i=0;i<outputNames.length;i++){
+        if (varName==outputNames[i]){
+            ind = i;
+            break;
+        }
+    }
+    return ind;
+}
 
-//var svg_tmp = d3.select("[id=scatterPlotFigure]").select("svg")
-//                    objects = svg.append("svg")
-//                            .attr("class", "objects")  
+function get_output_value(axis,d){
+    ind = find_output_index(axis);
+    return d.outputs[ind];
+}
 
-// 2var svgContainer = d3.select("body").append("svg")
-// 3                                    .attr("width", 200)
-// 4                                    .attr("height", 200);
-// 5
-// 6//Draw the line
-// 7var circle = svgContainer.append("line")
-// 8                         .attr("x1", 5)
-// 9                         .attr("y1", 5)
-//10                         .attr("x2", 50)
-//11                         .attr("y2", 50);
-//                    }
-//}
-
-//function calculateParetoRanking(){      
-//    cancelDotSelections();
-//
-//    var archs = d3.selectAll("[class=dot]")[0].filter(function(d){
-//        if(d3.select(d).attr("paretoRank")=="-1"){
-//            return true;
-//        }
-//    });
-//    if (archs.length==0){
-//        return;
-//    }
-//
-//
-//    var rank=0;
-//    archs = d3.selectAll("[class=dot]")[0];
-//
-//    while(archs.length > 0){
-//
-//        var numArchs = archs.length;
-//        rank++;
-//
-//        if (rank>10){
-//            break;
-//        }
-//
-//        for (var i=0; i<numArchs; i++){
-//            var non_dominated = true;
-//            var thisArch = archs[i];
-//
-//            for (var j=0;j<numArchs;j++){
-//                if (i==j) continue;
-//                if (
-//                    (thisArch.__data__.science <= archs[j].__data__.science &&
-//                    thisArch.__data__.cost > archs[j].__data__.cost) || 
-//                    (thisArch.__data__.science < archs[j].__data__.science &&
-//                    thisArch.__data__.cost >= archs[j].__data__.cost) 
-//                ){
-//                    non_dominated = false;
-//                }
-//            }
-//            if (non_dominated == true){
-//                d3.select(thisArch).attr("paretoRank",""+rank);
-//            } 
-//        }
-//        archs = d3.selectAll("[class=dot]")[0].filter(function(d){
-//            if(d3.select(d).attr("paretoRank")=="-1"){
-//                return true;
-//            }
-//        });
-//    }
-//
-//}
-
-//
-//var cars;
-//function getDrivingFeatures_automated(){
-//    cancelDotSelections();
-//    var clickedArchs = d3.selectAll("[class=dot_clicked]");
-//    var unClickedArchs = d3.selectAll("[class=dot]");
-//
-//    var minCost = 0;
-//    var maxCost = 5000;
-//    var minScience = 0.15;
-//    var maxScience = 1;
-//
-//    unClickedArchs.filter(function (d) {
-//
-//        var sci = d.science;
-//        var cost = d.cost;
-//
-//        if (sci < minScience) {
-//            return false;
-//        } else if (sci > maxScience) {
-//            return false;
-//        } else if (cost < minCost) {
-//            return false;
-//        } else if (cost > maxCost) {
-//            return false;
-//        } else {
-//            return true;
-//        }
-//    })
-//            .attr("class", "dot_clicked");
-//
-//    clickedArchs.filter(function (d) {
-//
-//        var sci = d.science;
-//        var cost = d.cost;
-//
-//        if (sci < minScience) {
-//            return true;
-//        } else if (sci > maxScience) {
-//            return true;
-//        } else if (cost < minCost) {
-//            return true;
-//        } else if (cost > maxCost) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    })
-//            .attr("class", "dot");
-////    d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
-//    
-//
-//    var support_threshold = d3.select("[id=support_threshold_input]")[0][0].value;
-//    var confidence_threshold = d3.select("[id=confidence_threshold_input]")[0][0].value;
-//    var lift_threshold = d3.select("[id=lift_threshold_input]")[0][0].value;
-//
-//    clickedArchs = d3.selectAll("[class=dot_clicked]");
-//    var numSelectedArchs = clickedArchs.size();
-//
-//    var bitStrings = [];
-//    bitStrings.length = 0;
-//
-//    for (var i = 0; i < numSelectedArchs; i++) {
-//        var tmpBitString = booleanArray2String(clickedArchs[0][i].__data__.archBitString);
-//        bitStrings.push(tmpBitString);
-//
-//    }
-//
-//    $.ajax({
-//        url: "drivingFeatureServlet",
-//        type: "POST",
-//        data: {ID: "automaticFeatureGeneration", bitStrings: JSON.stringify(bitStrings),supp:support_threshold,conf:confidence_threshold,lift:lift_threshold},
-//        async: false,
-//        success: function (data, textStatus, jqXHR)
-//        {cars = JSON.parse(data);},
-//        error: function (jqXHR, textStatus, errorThrown)
-//        {alert("error");}
-//    });
-//    console.log(cars);
-//    var aprioriDisplayWindow = window.open('drivingFeatures_apriori.html');
-//    
-//}
