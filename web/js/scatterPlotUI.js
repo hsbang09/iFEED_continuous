@@ -170,28 +170,21 @@ function draw_scatterPlot(source) {
             });
     dots.on("click", dot_click);
 
-//    d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
-//    d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
-//    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
-//    d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
-//    d3.select("[id=hide_selection]").on("click",hideSelections);
-//    d3.select("[id=show_all_archs]").on("click",showAllArchs);
-//    d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
-//    d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
-//    d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
-//    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
+    d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
+    d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
+    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
+    d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
+    d3.select("[id=hide_selection]").on("click",hideSelections);
+    d3.select("[id=show_all_archs]").on("click",showAllArchs);
+    d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
+    d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
+    d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
+    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
 //    d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
 //    if (presetGenerated === false){
 //        generatePresetCandidateDF();
 //    }
     
-//    d3.selectAll("[class=dot]")[0].forEach(function(d,i){
-//        d3.select(d).attr("paretoRank",-1);
-//    });
-//    calculateParetoRanking();
-//    drawParetoFront();
-   
-   
    
    d3.select("[id=axisOptions_x]").on("change",function(){
         reset_drawing_scatterPlot();

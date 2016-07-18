@@ -18,10 +18,10 @@ function getDrivingFeatures() {
     
 //   d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){console.log(d.__data__);})
     d3.selectAll("[class=dot]")[0].forEach(function(d){
-        unhighlightedArchs.push({inputs:d.__data__.inputs,objectives:d.__data__.objectives});
+        unhighlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
     });
     d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
-        highlightedArchs.push({inputs:d.__data__.inputs,objectives:d.__data__.objectives});
+        highlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
     });
 
     $.ajax({
@@ -84,198 +84,47 @@ function display_feature_option(){
             
    //Slider Reference:    http://lokku.github.io/jquery-nstslider/     
    
-    var slider_NSAT_div = filterOptions_inputs.append("div")
-            .attr("id","NSAT_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-top","10px")
-            .style("margin-left","15px");
-    slider_NSAT_div.append("div").style("width","100%").style("height","30px").style("float","left").text("include NSAT: ")
-            .append("input").attr("type","checkBox").attr("id","include_NSAT");
-    
-    d3.select("[id=include_NSAT]").on("click",function(d){
-        var includeNSAT = d3.select("[id=include_NSAT]")[0][0].checked;
-        if(includeNSAT){
-            d3.select("[id=NSAT_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=NSAT_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    
-    slider_NSAT_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_NSAT = slider_NSAT_div.append("div").attr("id","nstSlider_NSAT")
-            .attr("class","nstSlider").attr("data-range_min",NSAT_min).attr("data-range_max",NSAT_max)
-            .attr("data-cur_min",NSAT_min).attr("data-cur_max",NSAT_max).style("float","left").style("opacity",0.5);
-    slider_NSAT.append("div").attr("class","bar").style("float","left");
-    slider_NSAT.append("div").attr("class","leftGrip").style("float","left");
-    slider_NSAT.append("div").attr("class","rightGrip").style("float","left");
-    slider_NSAT_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
-    
-    
-//    d3.select("[id=NSAT_sliderbar_div]").append("input").attr("type","checkBox")
-//    d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked
-//d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text()
+    for (var i=0;i<jsonObj_scatterPlot[0].inputs.length;i++){
+        var varName = jsonObj_scatterPlot[0].inputNames[i];
+        var slider = filterOptions_inputs.append("div")
+                .attr("id",function(){
+                    return varName+"_sliderbar_div"
+                })
+                .style("width","100%")
+                .style("height","60px")
+                .style("float","left")
+                .style("margin-left","15px");
+        slider_div.append("div").style("width","100%").style("height","30px").style("float","left").text(function(){
+                    return "include "+varName+": "
+                })
+                .append("input").attr("type","checkBox").attr("id",function(){
+                    return "include_"+varName
+                });
 
-    var slider_NPLANE_div = filterOptions_inputs.append("div")
-            .attr("id","NPLANE_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-left","15px");
-    slider_NPLANE_div.append("div").style("width","100%").style("height","30px").style("float","left").text("include NPLANE: ")
-            .append("input").attr("type","checkBox").attr("id","include_NPLANE");
-    
-    d3.select("[id=include_NPLANE]").on("click",function(d){
-        var includeNPLANE = d3.select("[id=include_NPLANE]")[0][0].checked;
-        if(includeNPLANE){
-            d3.select("[id=NPLANE_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=NPLANE_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    
-    slider_NPLANE_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_NPLANE = slider_NPLANE_div.append("div").attr("id","nstSlider_NPLANE")
-            .attr("class","nstSlider").attr("data-range_min",NPLANE_min).attr("data-range_max",NPLANE_max)
-            .attr("data-cur_min",NPLANE_min).attr("data-cur_max",NPLANE_max).style("float","left").style("opacity",0.5);
-    slider_NPLANE.append("div").attr("class","bar").style("float","left");
-    slider_NPLANE.append("div").attr("class","leftGrip").style("float","left");
-    slider_NPLANE.append("div").attr("class","rightGrip").style("float","left");
-    slider_NPLANE_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
-    
-    var slider_ALT_div = filterOptions_inputs.append("div")
-            .attr("id","ALT_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-left","15px");
-    slider_ALT_div.append("div").style("width","100%").style("height","30px").style("float","left").text("include ALT: ")
-            .append("input").attr("type","checkBox").attr("id","include_ALT");
-    
-    d3.select("[id=include_ALT]").on("click",function(d){
-        var includeALT = d3.select("[id=include_ALT]")[0][0].checked;
-        if(includeALT){
-            d3.select("[id=ALT_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=ALT_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    
-    slider_ALT_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_ALT = slider_ALT_div.append("div").attr("id","nstSlider_ALT")
-            .attr("class","nstSlider").attr("data-range_min",ALT_min).attr("data-range_max",ALT_max)
-            .attr("data-cur_min",ALT_min).attr("data-cur_max",ALT_max).style("float","left").style("opacity",0.5);
-    slider_ALT.append("div").attr("class","bar").style("float","left");
-    slider_ALT.append("div").attr("class","leftGrip").style("float","left");
-    slider_ALT.append("div").attr("class","rightGrip").style("float","left");
-    slider_ALT_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
-    
-    var slider_INC_div = filterOptions_inputs.append("div")
-            .attr("id","INC_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-left","15px");
-    slider_INC_div.append("div").style("width","100%").style("height","30px").style("float","left").text("Include INC: ")
-            .append("input").attr("type","checkBox").attr("id","include_INC");
-    d3.select("[id=include_INC]").on("click",function(d){
-        var includeINC = d3.select("[id=include_INC]")[0][0].checked;
-        if(includeINC){
-            d3.select("[id=INC_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=INC_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    
-    slider_INC_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_INC = slider_INC_div.append("div").attr("id","nstSlider_INC")
-            .attr("class","nstSlider").attr("data-range_min",INC_min).attr("data-range_max",INC_max)
-            .attr("data-cur_min",INC_min).attr("data-cur_max",INC_max).style("float","left").style("opacity",0.5);
-    slider_INC.append("div").attr("class","bar").style("float","left");
-    slider_INC.append("div").attr("class","leftGrip").style("float","left");
-    slider_INC.append("div").attr("class","rightGrip").style("float","left");
-    slider_INC_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
-    
-    var slider_RAAN_div = filterOptions_inputs.append("div")
-            .attr("id","RAAN_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-left","15px");
-    slider_RAAN_div.append("div").style("width","100%").style("height","30px").style("float","left").text("Include RAAN: ")
-            .append("input").attr("type","checkBox").attr("id","include_RAAN");
-    d3.select("[id=include_RAAN]").on("click",function(d){
-        var includeRAAN = d3.select("[id=include_RAAN]")[0][0].checked;
-        if(includeRAAN){
-            d3.select("[id=RAAN_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=RAAN_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    slider_RAAN_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_RAAN = slider_RAAN_div.append("div").attr("id","nstSlider_RAAN")
-            .attr("class","nstSlider").attr("data-range_min",RAAN_min).attr("data-range_max",RAAN_max)
-            .attr("data-cur_min",RAAN_min).attr("data-cur_max",RAAN_max).style("float","left").style("opacity",0.5);
-    slider_RAAN.append("div").attr("class","bar").style("float","left");
-    slider_RAAN.append("div").attr("class","leftGrip").style("float","left");
-    slider_RAAN.append("div").attr("class","rightGrip").style("float","left");
-    slider_RAAN_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
-    
-    var slider_FOV_div = filterOptions_inputs.append("div")
-            .attr("id","FOV_sliderbar_div")
-            .style("width","100%")
-            .style("height","60px")
-            .style("float","left")
-            .style("margin-left","15px");
-    slider_FOV_div.append("div").style("width","100%").style("height","30px").style("float","left").text("Include FOV: ")
-            .append("input").attr("type","checkBox").attr("id","include_FOV");
-    d3.select("[id=include_FOV]").on("click",function(d){
-        var includeFOV = d3.select("[id=include_FOV]")[0][0].checked;
-        if(includeFOV){
-            d3.select("[id=FOV_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-        } else{
-            d3.select("[id=FOV_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-        }
-    });
-    slider_FOV_div.append("div").attr("class","leftLabel")
-            .style("float","left")
-            .style("margin-right","10px")
-            .style("margin-left","50px");
-    var slider_FOV = slider_FOV_div.append("div").attr("id","nstSlider_FOV")
-            .attr("class","nstSlider").attr("data-range_min",FOV_min).attr("data-range_max",FOV_max)
-            .attr("data-cur_min",FOV_min).attr("data-cur_max",FOV_max).style("float","left").style("opacity",0.5);
-    slider_FOV.append("div").attr("class","bar").style("float","left");
-    slider_FOV.append("div").attr("class","leftGrip").style("float","left");
-    slider_FOV.append("div").attr("class","rightGrip").style("float","left");
-    slider_FOV_div.append("div").attr("class","rightLabel")
-            .style("float","left")
-            .style("margin-left","10px");
+        d3.select("[id=include_"+varName+"]").on("click",function(d){
+            var includeVar = d3.select("[id=include_"+varName+"]")[0][0].checked;
+            if(includeVar){
+                d3.select("[id="+varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
+            } else{
+                d3.select("[id="+varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
+            }
+        });
+
+        slider_div.append("div").attr("class","leftLabel")
+                .style("float","left")
+                .style("margin-right","10px")
+                .style("margin-left","50px");
+        var slider = slider_div.append("div").attr("id","nstSlider_"+varName)
+                .attr("class","nstSlider").attr("data-range_min",get_min_output_value(varName,jsonObj_scatterPlot)).attr("data-range_max",get_max_output_value(varName,jsonObj_scatterPlot))
+                .attr("data-cur_min",get_min_output_value(varName,jsonObj_scatterPlot)).attr("data-cur_max",get_max_output_value(varName,jsonObj_scatterPlot)).style("float","left").style("opacity",0.5);
+        slider.append("div").attr("class","bar").style("float","left");
+        slider.append("div").attr("class","leftGrip").style("float","left");
+        slider.append("div").attr("class","rightGrip").style("float","left");
+        slider_div.append("div").attr("class","rightLabel")
+                .style("float","left")
+                .style("margin-left","10px");
+    }
+
 
     $('.nstSlider').nstSlider({
         "crossable_handles": false,
@@ -288,10 +137,6 @@ function display_feature_option(){
         }
     });
     
-    
-    
-
-
     filterOptions.append("button")
             .attr("id","applyFilterButton_new")
             .attr("class","filterOptionButtons")

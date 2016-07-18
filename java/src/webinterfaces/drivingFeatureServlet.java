@@ -104,8 +104,6 @@ public class drivingFeatureServlet extends HttpServlet {
         try {
             
 
-            
-            
 //       "[{"inputs":["1","1","500","51","6","25"],"objectives":["121.344","117.97","66.646","66.685","1000","39.072","125.173","123.704","70.096","70.096","168","44.647"]},"
 //       + "{"inputs":["1","1","500","51","22.5","25"],"objectives":["111.311","107.032","45.023","45.801","1000","44.589","119.654","114.799","66.415","67.727","168","62.426"]},"
 //       + "{"inputs":["1","1","500","51","13.5","25"],"objectives":["116.933","110.228","66.05","66.193","1000","143.498","123.477","120.659","70.096","70.096","168","143.937"]}]"
@@ -132,39 +130,41 @@ public class drivingFeatureServlet extends HttpServlet {
             
             
             ArrayList<String> inputs;
-            ArrayList<String> objectives;
+            ArrayList<String> outputs;
+            ArrayList<String> inputNames;
+            ArrayList<String> outputNames;
 
             while(true){
                 if(!unselected_raw.contains("[")){
                     break;
                 }
                 inputs = new ArrayList<>();
-                objectives = new ArrayList<>();
+                outputs = new ArrayList<>();
+                inputNames = new ArrayList<>();
+                outputNames = new ArrayList<>();
                 
-                int start = unselected_raw.indexOf("[");
-                int end = unselected_raw.indexOf("]");
-                String inside = unselected_raw.substring(start+1,end); // inputs
-                
-                String[] inside_split = inside.split(",");
-                for(int i=0;i<inside_split.length;i++){
-                    String num = inside_split[i];
-                    num = num.substring(1,num.length()-1);
-                    inputs.add(num);
+                for (int j=0;j<4;j++){
+                    int start = unselected_raw.indexOf("[");
+                    int end = unselected_raw.indexOf("]");
+                    String inside = unselected_raw.substring(start+1,end);
+                    String[] inside_split = inside.split(",");
+                    for(int i=0;i<inside_split.length;i++){
+                        String num = inside_split[i];
+                        num = num.substring(1,num.length()-1);
+                        if(j==0){
+                            inputs.add(num);
+                        }else if(j==1){
+                            outputs.add(num);
+                        }else if(j==2){
+                            inputNames.add(num);
+                        }else if(j==3){
+                            outputNames.add(num);
+                        }
+                    }
+                    unselected_raw = unselected_raw.substring(end+1);
                 }
-                
-                unselected_raw = unselected_raw.substring(end+1);
-                int start2 = unselected_raw.indexOf("[");
-                int end2 = unselected_raw.indexOf("]");
-                String inside2 = unselected_raw.substring(start2+1,end2); // outputs
-                
-                String[] inside_split2 = inside2.split(",");
-                for(int i=0;i<inside_split2.length;i++){
-                    String num = inside_split2[i];
-                    num = num.substring(1,num.length()-1);
-                    objectives.add(num);
-                }
-                unselected_raw = unselected_raw.substring(end2+1);
-                all.add(new Architecture(inputs, objectives));
+
+                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
             }
 
             while(true){
@@ -172,38 +172,36 @@ public class drivingFeatureServlet extends HttpServlet {
                     break;
                 }
                 inputs = new ArrayList<>();
-                objectives = new ArrayList<>();
+                outputs = new ArrayList<>();
+                inputNames = new ArrayList<>();
+                outputNames = new ArrayList<>();
                 
-                int start = selected_raw.indexOf("[");
-                int end = selected_raw.indexOf("]");
-                String inside = selected_raw.substring(start+1,end); // inputs
-                
-                String[] inside_split = inside.split(",");
-                for(int i=0;i<inside_split.length;i++){
-                    String num = inside_split[i];
-                    num = num.substring(1,num.length()-1);
-                    inputs.add(num);
+                for (int j=0;j<4;j++){
+                    int start = selected_raw.indexOf("[");
+                    int end = selected_raw.indexOf("]");
+                    String inside = selected_raw.substring(start+1,end);
+                    String[] inside_split = inside.split(",");
+                    for(int i=0;i<inside_split.length;i++){
+                        String num = inside_split[i];
+                        num = num.substring(1,num.length()-1);
+                        if(j==0){
+                            inputs.add(num);
+                        }else if(j==1){
+                            outputs.add(num);
+                        }else if(j==2){
+                            inputNames.add(num);
+                        }else if(j==3){
+                            outputNames.add(num);
+                        }
+                    }
+                    selected_raw = selected_raw.substring(end+1);
                 }
                 
-                selected_raw = selected_raw.substring(end+1);
-                int start2 = selected_raw.indexOf("[");
-                int end2 = selected_raw.indexOf("]");
-                String inside2 = selected_raw.substring(start2+1,end2); // outputs
-                
-                String[] inside_split2 = inside2.split(",");
-                for(int i=0;i<inside_split2.length;i++){
-                    String num = inside_split2[i];
-                    num = num.substring(1,num.length()-1);
-                    objectives.add(num);
-
-                }
-                selected_raw = selected_raw.substring(end2+1);
-                selected.add(new Architecture(inputs, objectives));
-                all.add(new Architecture(inputs,objectives));
+                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
+                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
             }
             
-
-
+            
             String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
             String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
             
@@ -312,54 +310,7 @@ public class drivingFeatureServlet extends HttpServlet {
             outputString = jsonObj;
             System.out.println(outputString);
         } 
-//        else if(requestID.equalsIgnoreCase("automaticFeatureGeneration")){
-//            
-//            
-//            //////////////////// initPreset repeated ////////////////////
-//            
-//            this.results = resultsGUIServlet.getInstance().getResults();
-//            double support_threshold = Double.parseDouble(request.getParameter("supp"));
-//            double confidence_threshold = Double.parseDouble(request.getParameter("conf"));
-//            double lift_threshold = Double.parseDouble(request.getParameter("lift")); 
-//            String bitStrings_raw = request.getParameter("bitStrings");
-//           
-//            bitStrings_raw = bitStrings_raw.substring(1, bitStrings_raw.length()-1);
-//            String[] bitStrings_split = bitStrings_raw.split(",");
-//            ArrayList<String> bitStrings = new ArrayList<>();
-//            for (String bitStrings_split1 : bitStrings_split) {
-//                String bitString = bitStrings_split1.substring(1, bitStrings_split1.length() - 1);
-//                bitStrings.add(bitString);
-//                if(bitString.length()!=60){
-//                    System.out.println("something's wrong: bitString length not 60");
-//                }
-//            }
-//            ArrayList<int[][]> selected_pop = new ArrayList<>();
-//            ArrayList<int[][]> pop = new ArrayList<>();
-//            for(Result result1:results){
-//                pop.add(boolArray2IntMat(result1.getArch().getBitString()));
-//            }
-//            for(String thisBitString:bitStrings){
-//                selected_pop.add(bitString2IntMat(thisBitString));
-//            }
-//            dfsGen.initialize2(selected_pop, pop, support_threshold,confidence_threshold,lift_threshold);
-//            
-//            //////////////////// initPreset repeated ////////////////////
-//            
-//            ArrayList<boolean[]> pop1 = new ArrayList<>();
-//            ArrayList<boolean[]> selected_pop1 = new ArrayList<>();
-//            for(Result result1:results){
-//                pop1.add(result1.getArch().getBitString());
-//            }
-//            for(String thisBitString:bitStrings){
-//                selected_pop1.add(bitString2booleanArray(thisBitString));
-//            }
-//            Apriori ap = new Apriori(pop1, selected_pop1, support_threshold, confidence_threshold, lift_threshold);
-//            ap.runApriori();
-//            ArrayList<DrivingFeature> cars = ap.getCARs();
-//
-//            String jsonObj = gson.toJson(cars);
-//            outputString = jsonObj;
-//        }
+
 //        else if(requestID.equalsIgnoreCase("addUserDefFeatures")){
 //            
 //            String names_input = request.getParameter("name");

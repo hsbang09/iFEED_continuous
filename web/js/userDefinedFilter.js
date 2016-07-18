@@ -357,9 +357,6 @@ function applyUserDefFilter_single(expression,prev,logic,bitString){
 }
                 
 
-
-
-
 function saveNewFilter(){
     var name = d3.select("[id=userDefinedFilter_name]")[0][0].value;
     var filterExpression = d3.select("[id=filter_expression]").text();
