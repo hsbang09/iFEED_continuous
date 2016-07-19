@@ -38,20 +38,8 @@ public class Scheme {
             
             String type = thisExp.split("-")[0];  
             int type_int=-1;
-            if(type.equals("NSAT")){
-                type_int=0;
-            } else if(type.equals("NPLANE")){
-                type_int=1;
-            }else if(type.equals("ALT")){
-                type_int=2;
-            }else if(type.equals("INC")){
-                type_int=3;
-            }else if(type.equals("RAAN")){
-                type_int=4;
-            }else if(type.equals("FOV")){
-                type_int=5;
-            }
-            
+            type_int = a.getInputNames().indexOf(type);
+
             double exact=-9999, min=-9999, max=-9999;
             for(int j=0;j<thisExp.split("-").length-1;j++){
                 

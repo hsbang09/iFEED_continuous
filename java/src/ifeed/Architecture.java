@@ -39,5 +39,11 @@ public class Architecture {
     public ArrayList<String> getOutputs(){
         return outputs;
     }
+    public ArrayList<String> getInputNames(){
+        return inputNames;
+    }
+    public ArrayList<String> getOutputNames(){
+        return outputNames;
+    }
     
 }
