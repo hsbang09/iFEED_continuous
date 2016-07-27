@@ -349,7 +349,7 @@ function applyFilter_add(){
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
 
 function generatePresetCandidateDF(){
-    var inputs = jsonObj_scatterPlot.inputNames;
+    var inputs = jsonObj_scatterPlot[0].inputNames;
     var input_max = [];
     var input_min = [];
     for(var i=0;i<inputs.length;i++){

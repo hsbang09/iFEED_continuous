@@ -180,10 +180,10 @@ function draw_scatterPlot(source) {
     d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
     d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
-//    d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
-//    if (presetGenerated === false){
-//        generatePresetCandidateDF();
-//    }
+    d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
+    if (presetGenerated === false){
+        generatePresetCandidateDF();
+    }
     
    
    d3.select("[id=axisOptions_x]").on("change",function(){
