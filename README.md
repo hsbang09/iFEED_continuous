@@ -1,2 +1,2 @@
-# iFEED_GNC
-iFEED GNC data
+# iFEED_continuous
+iFEED continuous data
