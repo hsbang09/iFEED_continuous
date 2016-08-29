@@ -16,65 +16,7 @@ and open the template in the editor.
         <link type="text/css" rel="stylesheet" href="js/libs/jquery.nstSlider.css">
         <style>
 
-            #title{
-                float:left;
-                margin-left: 30px;
-                margin-top: 15px;
-                width: 80%;
 
-            }
-
-            #scatterPlotFigure {
-                border: 1px black double;
-                width: 960px;
-                height: 540px;
-                float: left;
-                margin-right: 10px;
-                margin-left:0px;
-                margin-top:0px;
-            }
-            #drivingFeaturesAndSensitivityAnalysis_div{
-                float:left;
-                width: 200px;
-                height:540px;
-                border: 1px black double;
-                overflow:scroll;
-            }
-
-            #firstLineOfFigs{
-                margin-left: 30px;
-                margin-bottom: 10px;
-                width: 95%;
-                height: 540px;   
-                float: left;
-            }
-            #secondLineOfFigs{
-                float:left;
-                margin-top: 5px;
-                margin-left: 30px;
-                width: 95%;
-
-            }
-
-
-            #basicInfoBox_div{
-                float:left;
-                border: 1px black double;
-                width: 800px;
-                height: 430px;
-                overflow: scroll;
-                margin-left: 0px;
-                margin-top: 0px;
-                font-family: 'Helvetica Neue', Helvetica; font-weight: 300; padding: 5px;
-            }
-            #instrumentOptions{
-                float: left;
-                margin-left: 10px;
-                height: 440px;
-                border: 1px black double;
-                width: 140px;
-
-            }
             #resultFileURL{
                 width: 650px;
             }
@@ -86,50 +28,18 @@ and open the template in the editor.
                 height:30px;
             }
 
-            #getDrivingFeaturesSetting_div{
-                float:left;
-                margin-left: 5px;
-                margin-top: 15px;
-            }
+
             #fixScatterPlotWindowButton_div{
                 float:left;
                 margin-left: 10px;
             }
-            #selectArchsWithinRange_div{
-                float:left;
-                margin-left: 5px;
-                margin-top: 7px;
-            }
-            #selectArchsWithinRange_minCost{
-                margin-top: 3px;
-                margin-bottom: 3px;
-                width: 65px;
-            }
-            #selectArchsWithinRange_maxCost{
-                width: 65px;
-                margin-top: 3px;
-                margin-bottom: 3px;
-            }
-            #selectArchsWithinRange_minScience{
-                margin-top: 3px;
-                margin-bottom: 3px;
-                width: 65px;
-            }
-            #selectArchsWithinRange_maxScience{
-                width: 65px;
-                margin-top: 3px;
-                margin-bottom: 3px;
-            }
+
 
 
             #dropdown_presetDesignFeatures{
                 margin-top: 7px;
             }
-            #getDrivingFeaturesButton{
-                margin-top: 12px;
-                margin-bottom: 7px;
-                width: 170px;
-            }
+
             #viewCandidateFeatures{
                 margin-bottom: 7px;
                 width: 170px;
@@ -228,12 +138,11 @@ and open the template in the editor.
 
     </head>
     <body>
-        <div id="title">
+        <div id="title" style="float:left;margin-left:30px;margin-top:15px;width:80%">
             <h2>iFEED Web App</h2>
         </div>
 
-
-        <div id="requestButtons" style="width:95%;float:left; margin-left: 30px; margin-top:10px; margin-bottom: 5px; height: 30px">
+        <div id="options_horizontal" style="width:95%;float:left; margin-left: 30px; margin-top:10px; margin-bottom: 5px; height: 30px">
             <button id="draw_scatterplot" style="float:left;margin-left:5px;">Draw Scatterplot</button>
             <div style="float:left; margin-left: 15px">X axis:</div>
             <select id="axisOptions_x" style="width:170px;float:left;margin-left: 5px">
@@ -241,44 +150,66 @@ and open the template in the editor.
             <div style="float:left; margin-left: 5px">Y axis:</div>
             <select id="axisOptions_y" style="width:170px;float:left; margin-left: 5px">
             </select>
-            <button id="scatterPlot_option" class="zoom" style="float:left;margin-left:15px;">Enable drag-selection</button>
+            <button id="scatterPlot_option" class="zoom" style="float:left;margin-left:15px;">Zoom/Drag-selection</button>
             <div style="float:left; margin-left: 150px">Number of Architectures:</div>
             <div id="numOfArchs" style="float:left; margin-left:5px;">
                <input type="text" id="numOfArchs_inputBox" value="0" style="width:50px; height: 20px; margin-left: 1px;"/>
             </div>
         </div>
 
-        <div id="firstLineOfFigs">
-            <figure id="scatterPlotFigure"></figure>
-            <div id="drivingFeaturesAndSensitivityAnalysis_div">
-                <div id="selectArchsWithinRange_div">
+        <div id="UpperPane" style="                
+                margin-left: 30px;
+                margin-bottom: 10px;
+                width: 95%;
+                height: 540px;   
+                float: left;">
+            <figure id="scatterPlotFigure" style="border: 1px black double;
+                width: 960px;
+                height: 540px;
+                float: left;
+                margin-right: 10px;
+                margin-left:0px;
+                margin-top:0px;"></figure>
+            <div id="options_vertical" style="                
+                float:left;
+                width: 200px;
+                height:540px;
+                border: 1px black double;
+                overflow:scroll;">
 
-                    
-<!--                    Cost range: <br/>
-                    <input id="selectArchsWithinRange_minCost" type="text" value="0"/>&nbsp; ~&nbsp; <input id="selectArchsWithinRange_maxCost" type="text" value="inf"/>
-                    <br/> Science Benefit range: <br/>
-                    <input id="selectArchsWithinRange_minScience" type="text" value="0"/>&nbsp; ~&nbsp; <input id="selectArchsWithinRange_maxScience" type="text" value="1"/>
-                    <br/>-->
-                    <!--<button type="button" id="selectArchsWithinRangeButton" style="margin-top:5px;width:170px">Select archs within range</button>-->
+                <div style="                
+                    float:left;
+                    margin-left: 5px;
+                    margin-top: 7px;">
+
                     <button type="button"  id="cancel_selection" style="margin-top:5px;width: 170px;">Cancel all selections</button>
                     <button type="button"  id="hide_selection" style="margin-top:5px;width: 170px;">Hide selections</button>
                     <button type="button"  id="show_all_archs" style="margin-top:5px;width: 170px;">Show hidden archs</button>
-                    
+
                     <div id="numOfSelectedArchs" style="float:left; margin-top:10px">
                         Num of selected Archs: 
                         <input type="text" id="numOfSelectedArchs_inputBox" value="0" style="width:50px; height: 17px; margin-left: 1px;margin-top:5px"/>
                     </div>
-                    
+
                 </div>
-                
-                <div id="getDrivingFeaturesSetting_div">
+
+                <div id="drivingFeatures_setting" style="                
+                    float:left;
+                    margin-left: 5px;
+                    margin-top: 15px;">
+                    
                     Threshold Setup <br/>
                     <div style="margin-top: 5px;">
                         Support: &nbsp;<input id="support_threshold_input" type="text" value="0.02" style="width:105px; margin-top: 3px;"/>
                         Confidence:&nbsp;<input id="confidence_threshold_input" type="text" value="0.3" style="width:85px; margin-top: 3px;"/>
                         Lift:&nbsp;<input id="lift_threshold_input" type="text" value="1" style="width:135px; margin-top: 3px;"/>
                     </div>
-                    <button type="button" id="getDrivingFeaturesButton">Get driving features</button>
+                    
+                    <button type="button" id="getDrivingFeaturesButton" style ="
+                        margin-top: 10px;
+                        margin-bottom: 7px;
+                        width: 170px;">Get driving features</button>
+                        
                     <select id="dfsort_options" style="width:170px; margin-bottom: 7px">
                         <option value="lift">Lift</option>
                         <option value="supp">Support</option>
@@ -289,7 +220,7 @@ and open the template in the editor.
                     <button type="button" id="viewCandidateFeatures">View candidate features</button>
                     <button type="button" id="getClassificationTreeButton">Build classification tree</button>
                     <button type="button" id="openFeatureOptions">Open Feature Options</button>
-                    
+
                 </div>
 
             </div>
@@ -297,9 +228,20 @@ and open the template in the editor.
 
         <br/>
 
-        <div id="secondLineOfFigs">
-            <div id="basicInfoBox_div"></div> 
-            <div id="instrumentOptions"></div>
+        <div id="lowerPane" style="                
+                float:left;
+                margin-top: 5px;
+                margin-left: 30px;
+                width: 95%;">
+            <div id="basicInfoBox_div" style="                
+                float:left;
+                border: 1px black double;
+                width: 800px;
+                height: 430px;
+                overflow: scroll;
+                margin-left: 0px;
+                margin-top: 0px;
+                font-family: 'Helvetica Neue', Helvetica; font-weight: 300; padding: 5px;"></div> 
         </div>
 
 
@@ -310,82 +252,71 @@ and open the template in the editor.
           <script src="js/relabel.js" type="text/javascript"></script>
         <script>
 
-//            $(document).on('click', '.toggle-button', function () {
-//                $(this).toggleClass('toggle-button-selected');
-//            });
 
 
-var margin = {top: 20, right: 20, bottom: 30, left: 60},
-width = 960 - margin.left - margin.right,
-        height = 540 - margin.top - margin.bottom;
 
-var jsonObj_scatterPlot;
 var json_arch;
 var svg,objects;
 
 
-var xValue, xScale, xMap, xAxis, xBuffer, yBuffer,
-        yValue, yScale, yMap, yAxis;
-
-var x_axis,y_axis;
 
 var color_drivingFeatures = d3.scale.category10();        
 var i_drivingFeatures=0;
 var filter_arch;
-var modified_filterArch;
 
 var translate_tmp = [0,0];
 var scale_tmp = 0;
 var translate_tmp_local = [0,0];
 var scale_tmp_local = 0;
 
-var filterDropdownOptions = [{value:"not_selected",text:"Preset Filters"},{value:"paretoFront",text:"Pareto front"},
-    {value:"present",text:"Present"},{value:"absent",text:"Absent"},{value:"inOrbit",text:"In orbit"},
-    {value:"notInOrbit",text:"Not in orbit"},{value:"together",text:"Together"},
-    {value:"togetherInOrbit",text:"Together in orbit"},{value:"separate",text:"Separate"},
-    {value:"emptyOrbit",text:"Empty orbit"},{value:"numOrbitUsed",text:"Number of orbit used"},
-    {value:"subsetOfInstruments",text:"Num of instruments in a subset"},{value:"defineNewFilter",text:"Define new filter"}];
-
 var userDefFilterExpressionHistory = [];
 userDefFilterExpressionHistory.length=0;
 var userDefFilters = [];
-
 var jsonObj_tree;
 
-var scatterPlot_loaded_for_first_time = true;
 
+
+// Global variables
+var new_data_import = true;
+var presetGenerated = false;
+var jsonObj_scatterPlot = null;
+var nInputs, nOutputs, inputNames, outputNames;
+
+// Scatter plot size params
+var scatterPlot_margin = {top: 20, right: 20, bottom: 30, left: 60},
+scatterPlot_width = 960 - scatterPlot_margin.left - scatterPlot_margin.right,
+scatterPlot_height = 540 - scatterPlot_margin.top - scatterPlot_margin.bottom;
+
+// Candidate driving features
 var candidateDrivingFeatures = [];
 var candidateDrivingFeatures_names = [];
-var presetGenerated = false;
-var olddata;
 
-var nInputs, nOutputs, inputNames, outputNames;
+
+
+
 
 
 
 try {
 
-function newDataFromResultFile(){
-
-    if (scatterPlot_loaded_for_first_time===false){
+function import_data(){
+    // Imports the data from the data file.
+    
+    if (new_data_import===false){
         reset_drawing_scatterPlot();
         draw_scatterPlot(jsonObj_scatterPlot);
     }else{
-
-//                testType = d3.select("[id=resultFileURL]")[0][0].value;
         $.ajax(
                 {
-                    url: "resultsGUIServlet",
+                    url: "dataFileServlet",
                     type: "POST",
-                    data: {ID: "resultFileURL_newData"},
+                    data: {ID: "import_data"},
                     async: false,
                     success: function (data, textStatus, jqXHR)
                     {
-
                         jsonObj_scatterPlot = JSON.parse(data);
                     },
                     complete: function () {
-                        
                         nInputs = jsonObj_scatterPlot[0].inputs.length;
                         nOutputs = jsonObj_scatterPlot[0].outputs.length;
                         inputNames = jsonObj_scatterPlot[0].inputNames;
@@ -407,11 +338,11 @@ function newDataFromResultFile(){
                                     return d
                                 })
                                 .text(function(d){return d});
-                        
+
                         reset_drawing_scatterPlot();
                         draw_scatterPlot(jsonObj_scatterPlot);
-                        scatterPlot_loaded_for_first_time = false; 
-                                d3.select("[id=basicInfoBox_div]").select("g").remove();
+                        new_data_import = false; 
+                        d3.select("[id=basicInfoBox_div]").select("g").remove();
                     },
                     error: function (jqXHR, textStatus, errorThrown)
                     {
@@ -422,129 +353,128 @@ function newDataFromResultFile(){
 }
 
 
+function draw_archBasicInfoTable(data) {
 
-    function draw_archBasicInfoTable(data) {
+    d3.select("[id=basicInfoBox_div]")
+            .select("g").select("table").remove();
 
-        d3.select("[id=basicInfoBox_div]")
-                .select("g").select("table").remove();
+    var archInfoBox = d3.select("[id=basicInfoBox_div]")
+            .select("g");
 
-        var archInfoBox = d3.select("[id=basicInfoBox_div]")
-                .select("g");
+    var input_table = archInfoBox.append("table")
+            .attr("id", "archInfo_input_table")
+            .style("float","left")
+            .style("border-collapse","collapse")
+            .style("border","1px solid black")
+            .style("margin-left","20px")
+            .style("margin-top","10px")
+            .style("margin-right","10px");
 
-        var input_table = archInfoBox.append("table")
-                .attr("id", "archInfo_input_table")
-                .style("float","left")
-                .style("border-collapse","collapse")
-                .style("border","1px solid black")
-                .style("margin-left","20px")
-                .style("margin-top","10px")
-                .style("margin-right","10px");
+    var columns = [];
+    columns.push({columnName: "NSAT"});
+    columns.push({columnName: "NPLANE"});
+    columns.push({columnName: "ALT"});
+    columns.push({columnName: "INC"});
+    columns.push({columnName: "RAAN"});
+    columns.push({columnName: "FOV"});
 
-        var columns = [];
-        columns.push({columnName: "NSAT"});
-        columns.push({columnName: "NPLANE"});
-        columns.push({columnName: "ALT"});
-        columns.push({columnName: "INC"});
-        columns.push({columnName: "RAAN"});
-        columns.push({columnName: "FOV"});
-
-        // create table header
-        input_table.append('thead').append('tr')
-                .selectAll('th')
-                .data(columns).enter()
-                .append('th')
-                .text(function (d) {
-                    return d.columnName;
-                })
-                .attr("width","80px")
-                .style("background-color", function (d) {
-                        return "#D0D0D0";
-                })
-                .style("border","1px solid black")
-                .style("font-size", "20px");
-
+    // create table header
+    input_table.append('thead').append('tr')
+            .selectAll('th')
+            .data(columns).enter()
+            .append('th')
+            .text(function (d) {
+                return d.columnName;
+            })
+            .attr("width","80px")
+            .style("background-color", function (d) {
+                    return "#D0D0D0";
+            })
+            .style("border","1px solid black")
+            .style("font-size", "20px");
 
 
 
 
-        // create table body
-        input_table.append('tbody')
-                .append('tr')
-                .selectAll('td')
-                .data(data.inputs)
-                .enter()
-                .append('td')
-                .text(function (d) {
-                    return d;
-                })
-                .attr("width","80px")
-                .style("border","1px solid black")
-                .style("font-size", "18px");
+
+    // create table body
+    input_table.append('tbody')
+            .append('tr')
+            .selectAll('td')
+            .data(data.inputs)
+            .enter()
+            .append('td')
+            .text(function (d) {
+                return d;
+            })
+            .attr("width","80px")
+            .style("border","1px solid black")
+            .style("font-size", "18px");
 
 
-        var objective_table = archInfoBox.append("table")
-                                        .attr("id", "archInfo_objective_table")
-                                        .style("float","left")
-                                        .style("margin-left","20px")
-                                        .style("margin-top","10px")
-                                        .style("border-collapse","collapse")
-                                        .style("border","1px solid black");
+    var objective_table = archInfoBox.append("table")
+                                    .attr("id", "archInfo_objective_table")
+                                    .style("float","left")
+                                    .style("margin-left","20px")
+                                    .style("margin-top","10px")
+                                    .style("border-collapse","collapse")
+                                    .style("border","1px solid black");
 
-        var columns = [];
-        columns.push({columnName: "Objective"});
-        columns.push({columnName: "Value"});
-        columns.push({columnName: "Objective"});
-        columns.push({columnName: "Value"});
+    var columns = [];
+    columns.push({columnName: "Objective"});
+    columns.push({columnName: "Value"});
+    columns.push({columnName: "Objective"});
+    columns.push({columnName: "Value"});
 
-        // create table header
-        objective_table.append('thead').append('tr')
-                .selectAll('th')
-                .data(columns).enter()
-                .append('th')
-                .text(function (d) {
-                    return d.columnName;
-                })
-                .style("background-color", function (d) {
-                        return "#D0D0D0";
-                })
-                .attr("width","120px")
-                .style("border","1px solid black")
-                .style("font-size", "20px");
+    // create table header
+    objective_table.append('thead').append('tr')
+            .selectAll('th')
+            .data(columns).enter()
+            .append('th')
+            .text(function (d) {
+                return d.columnName;
+            })
+            .style("background-color", function (d) {
+                    return "#D0D0D0";
+            })
+            .attr("width","120px")
+            .style("border","1px solid black")
+            .style("font-size", "20px");
 
-        var rows = [];
-        rows.push({name1:"avg_global",val1:data.objectives[0],name2:"max_global",val2:data.objectives[6]});
-        rows.push({name1:"avg_trop",val1:data.objectives[1],name2:"max_trop",val2:data.objectives[7]});
-        rows.push({name1:"avg_NH",val1:data.objectives[2],name2:"max_NH",val2:data.objectives[8]});
-        rows.push({name1:"avg_SH",val1:data.objectives[3],name2:"max_SH",val2:data.objectives[9]});
-        rows.push({name1:"avg_polar",val1:data.objectives[4],name2:"max_poar",val2:data.objectives[10]});
-        rows.push({name1:"avg_US",val1:data.objectives[5],name2:"max_US",val2:data.objectives[11]});
+    var rows = [];
+    rows.push({name1:"avg_global",val1:data.objectives[0],name2:"max_global",val2:data.objectives[6]});
+    rows.push({name1:"avg_trop",val1:data.objectives[1],name2:"max_trop",val2:data.objectives[7]});
+    rows.push({name1:"avg_NH",val1:data.objectives[2],name2:"max_NH",val2:data.objectives[8]});
+    rows.push({name1:"avg_SH",val1:data.objectives[3],name2:"max_SH",val2:data.objectives[9]});
+    rows.push({name1:"avg_polar",val1:data.objectives[4],name2:"max_poar",val2:data.objectives[10]});
+    rows.push({name1:"avg_US",val1:data.objectives[5],name2:"max_US",val2:data.objectives[11]});
 
-        // create table body
-        objective_table.append('tbody')
-                .selectAll('tr')
-                .data(rows).enter()
-                .append('tr')
-                .selectAll('td')
-                .data(function(row,i){
-                    var thisRow = [];
-                    thisRow.push({content:row.name1});
-                    thisRow.push({content:row.val1});
-                    thisRow.push({content:row.name2});
-                    thisRow.push({content:row.val2});
-                    return thisRow;
-                })
-                .enter()
-                .append('td')
-                .text(function(d){
-                    return d.content;
-                })
-                .attr("width","120px")
-                .style("border","1px solid black");
-
-
+    // create table body
+    objective_table.append('tbody')
+            .selectAll('tr')
+            .data(rows).enter()
+            .append('tr')
+            .selectAll('td')
+            .data(function(row,i){
+                var thisRow = [];
+                thisRow.push({content:row.name1});
+                thisRow.push({content:row.val1});
+                thisRow.push({content:row.name2});
+                thisRow.push({content:row.val2});
+                return thisRow;
+            })
+            .enter()
+            .append('td')
+            .text(function(d){
+                return d.content;
+            })
+            .attr("width","120px")
+            .style("border","1px solid black");
 
 
-    }
+
+
+}
 
     function numOfArchs(){
         var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
@@ -555,7 +485,7 @@ function newDataFromResultFile(){
     }
 
 
-d3.select("[id=draw_scatterplot]").on("click", newDataFromResultFile);
+d3.select("[id=draw_scatterplot]").on("click", import_data);
 
 
 

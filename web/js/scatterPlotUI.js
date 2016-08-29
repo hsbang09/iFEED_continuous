@@ -10,47 +10,42 @@ function reset_drawing_scatterPlot() {
 
 function draw_scatterPlot(source) {
 
-    x_axis = d3.select("[id=axisOptions_x]")[0][0].value;
-    y_axis = d3.select("[id=axisOptions_y]")[0][0].value;
+    var x_axis = d3.select("[id=axisOptions_x]")[0][0].value;
+    var y_axis = d3.select("[id=axisOptions_y]")[0][0].value;
 
     // setup x 
-    xValue = function (d) {
+    var xValue = function (d) {
         return get_output_value(x_axis,d);
     }; // data -> value
-    xScale = d3.scale.linear().range([0, width]); // value -> display
-    //
+    var xScale = d3.scale.linear().range([0, scatterPlot_width]); // value -> display
+    
     // don't want dots overlapping axis, so add in buffer to data domain 
-    xBuffer = (get_max_output_value(x_axis,source) - get_min_output_value(x_axis,source)) * 0.05;
+    var xBuffer = (get_max_output_value(x_axis,source) - get_min_output_value(x_axis,source)) * 0.05;
     xScale.domain([get_min_output_value(x_axis,source) - xBuffer, get_max_output_value(x_axis,source) + xBuffer]);
 
     xMap = function (d) {
         return xScale(xValue(d));
     }; // data -> display
-    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
-//                                    .tickSize(-height);
-//                                    .tickFormat(d3.format("s"));
+    var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
 
     // setup y
     yValue = function (d) {
         return get_output_value(y_axis,d);
     }; // data -> value
-    yScale = d3.scale.linear().range([height, 0]); // value -> display
+    var yScale = d3.scale.linear().range([scatterPlot_height, 0]); // value -> display
 
-    yBuffer = (get_max_output_value(y_axis,source) - get_min_output_value(y_axis,source)) * 0.05;
+    var yBuffer = (get_max_output_value(y_axis,source) - get_min_output_value(y_axis,source)) * 0.05;
     yScale.domain([get_min_output_value(y_axis,source) - yBuffer, get_max_output_value(y_axis,source) + yBuffer]);
 
     yMap = function (d) {
         return yScale(yValue(d));
     }; // data -> display
-    yAxis = d3.svg.axis().scale(yScale).orient("left");
-//                                .tickSize(-width);
-//                                .tickFormat(d3.format("s"));
+    var yAxis = d3.svg.axis().scale(yScale).orient("left");
 
-
-    svg = d3.select("[id=scatterPlotFigure]")
+    var svg = d3.select("[id=scatterPlotFigure]")
         .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("width", scatterPlot_width + scatterPlot_margin.left + scatterPlot_margin.right)
+        .attr("height", scatterPlot_height + scatterPlot_margin.top + scatterPlot_margin.bottom)
         .call(
                 d3.behavior.zoom()
                 .x(xScale)
@@ -93,20 +88,16 @@ function draw_scatterPlot(source) {
                 })
                 )
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-//            var zoom = d3.behavior.zoom().x(function(){
-//                console.log(xScale.domain());
+        .attr("transform", "translate(" + scatterPlot_margin.left + "," + scatterPlot_margin.top + ")");
 
     // x-axis
     svg.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", "translate(0," + scatterPlot_height + ")")
             .call(xAxis)
             .append("text")
             .attr("class", "label")
-            .attr("x", width)
+            .attr("x", scatterPlot_width)
             .attr("y", -6)
             .style("text-anchor", "end")
             .text(x_axis);
@@ -123,17 +114,17 @@ function draw_scatterPlot(source) {
             .style("text-anchor", "end")
             .text(y_axis);
 
-    objects = svg.append("svg")
+    var objects = svg.append("svg")
             .attr("class", "objects")
-            .attr("width", width)
-            .attr("height", height);
+            .attr("width", scatterPlot_width)
+            .attr("height", scatterPlot_height);
 
     //Create main 0,0 axis lines:
     objects.append("svg:line")
             .attr("class", "axisLine hAxisLine")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", width)
+            .attr("x2", scatterPlot_width)
             .attr("y2", 0)
             .attr("transform", "translate(0," + (yScale(0)) + ")");
     objects.append("svg:line")
@@ -141,7 +132,7 @@ function draw_scatterPlot(source) {
             .attr("x1", 0)
             .attr("y1", 0)
             .attr("x2", 0)
-            .attr("y2", height)
+            .attr("y2", scatterPlot_height)
             .attr("transform", "translate(" + (xScale(0)) + ",0)");
 
     var dots = objects.selectAll(".dot")
@@ -160,14 +151,13 @@ function draw_scatterPlot(source) {
                 return "#000000";
             });
 
-
     dots.on("mouseover", dot_mouseover)
-            .on("mouseout", function (d) {
-                if (d3.select(this).attr("class") === "dot_clicked") {
-                } else {
-                    d3.select(this).style("fill", "#000000");
-                }
-            });
+        .on("mouseout", function (d) {
+            if (d3.select(this).attr("class") === "dot_clicked") {
+            } else {
+                d3.select(this).style("fill", "#000000");
+            }
+        });
     dots.on("click", dot_click);
 
     d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
@@ -177,7 +167,7 @@ function draw_scatterPlot(source) {
     d3.select("[id=hide_selection]").on("click",hideSelections);
     d3.select("[id=show_all_archs]").on("click",showAllArchs);
     d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
-    d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]").selectAll("options");
+    d3.select("[id=options_vertical]").selectAll("options");
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
     d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
     d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
@@ -185,7 +175,6 @@ function draw_scatterPlot(source) {
         generatePresetCandidateDF();
     }
     
-   
    d3.select("[id=axisOptions_x]").on("change",function(){
         reset_drawing_scatterPlot();
         draw_scatterPlot(jsonObj_scatterPlot);
@@ -343,6 +332,9 @@ function dot_click(d) {
 
 
 function scatterPlot_option(){ // three options: zoom, drag_selection, drag_deselection
+
+    var x_axis = d3.select("[id=axisOptions_x]")[0][0].value;
+    var y_axis = d3.select("[id=axisOptions_y]")[0][0].value;
 
     if (d3.select("[id=scatterPlot_option]").attr("class")==="drag_deselection"){
 
@@ -544,17 +536,30 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
 
 
 function get_max_output_value(varName,d){
+    /* For a given output variable, returns the minimum value.
+     * 
+     * Inputs
+     *      d: The dataset containing all datapoints.
+    */
     var array =[];
     var index = find_output_index(varName);
     for (var i=0;i<d.length;i++){
+        // Store all the values of the given output to an array
         array.push(d[i].outputs[index]);
     }
     return Math.max.apply(Math, array);
 }
 function get_min_output_value(varName,d){
+    /* For a given output variable, returns the minimum value.
+     * 
+     * Inputs
+     *      d: The dataset containing all datapoints.
+    */
+    
     var array =[];
     var index = find_output_index(varName);
     for (var i=0;i<d.length;i++){
+        // Store all the values of the given output to an array
         array.push(d[i].outputs[index]);
     }
     return Math.min.apply(Math, array);
@@ -562,6 +567,7 @@ function get_min_output_value(varName,d){
 
 
 function find_output_index(varName){
+    // Iterates over all outputs and returns the index of the output whose name matches with the name given as an argument.
     var ind = 0;
     for(var i=0;i<outputNames.length;i++){
         if (varName==outputNames[i]){
@@ -573,6 +579,13 @@ function find_output_index(varName){
 }
 
 function get_output_value(axis,d){
+    /* Returns the value of the variable for a single point data d.
+     * 
+     *  Inputs:
+     *      axis: The name of an output variable
+     *      d: Single point solution containing all variable names and their corresponding values 
+    */
+    
     ind = find_output_index(axis);
     return d.outputs[ind];
 }
