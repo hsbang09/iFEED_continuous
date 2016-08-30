@@ -15,13 +15,13 @@ function draw_scatterPlot(source) {
 
     // setup x 
     var xValue = function (d) {
-        return get_output_value(x_axis,d);
+        return get_var_value(x_axis,d);
     }; // data -> value
-    var xScale = d3.scale.linear().range([0, scatterPlot_width]); // value -> display
+    xScale = d3.scale.linear().range([0, scatterPlot_width]); // value -> display
     
     // don't want dots overlapping axis, so add in buffer to data domain 
-    var xBuffer = (get_max_output_value(x_axis,source) - get_min_output_value(x_axis,source)) * 0.05;
-    xScale.domain([get_min_output_value(x_axis,source) - xBuffer, get_max_output_value(x_axis,source) + xBuffer]);
+    var xBuffer = (get_max_value(x_axis,source) - get_min_value(x_axis,source)) * 0.05;
+    xScale.domain([get_min_value(x_axis,source) - xBuffer, get_max_value(x_axis,source) + xBuffer]);
 
     xMap = function (d) {
         return xScale(xValue(d));
@@ -30,12 +30,12 @@ function draw_scatterPlot(source) {
 
     // setup y
     yValue = function (d) {
-        return get_output_value(y_axis,d);
+        return get_var_value(y_axis,d);
     }; // data -> value
-    var yScale = d3.scale.linear().range([scatterPlot_height, 0]); // value -> display
+    yScale = d3.scale.linear().range([scatterPlot_height, 0]); // value -> display
 
-    var yBuffer = (get_max_output_value(y_axis,source) - get_min_output_value(y_axis,source)) * 0.05;
-    yScale.domain([get_min_output_value(y_axis,source) - yBuffer, get_max_output_value(y_axis,source) + yBuffer]);
+    var yBuffer = (get_max_value(y_axis,source) - get_min_value(y_axis,source)) * 0.05;
+    yScale.domain([get_min_value(y_axis,source) - yBuffer, get_max_value(y_axis,source) + yBuffer]);
 
     yMap = function (d) {
         return yScale(yValue(d));
@@ -114,7 +114,7 @@ function draw_scatterPlot(source) {
             .style("text-anchor", "end")
             .text(y_axis);
 
-    var objects = svg.append("svg")
+    objects = svg.append("svg")
             .attr("class", "objects")
             .attr("width", scatterPlot_width)
             .attr("height", scatterPlot_height);
@@ -162,14 +162,13 @@ function draw_scatterPlot(source) {
 
     d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
     d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
-    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
+//    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
     d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
     d3.select("[id=hide_selection]").on("click",hideSelections);
     d3.select("[id=show_all_archs]").on("click",showAllArchs);
-    d3.select("[id=openFeatureOptions]").on("click",openFeatureOptions);
-    d3.select("[id=options_vertical]").selectAll("options");
+    d3.select("[id=openFilterOptions]").on("click",openFilterOptions);
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
-    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_option);
+    d3.select("[id=scatterPlot_option]").on("click",scatterPlot_toggle_option);
     d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
     if (presetGenerated === false){
         generatePresetCandidateDF();
@@ -259,8 +258,7 @@ function cancelDotSelections(){
             .style("fill", function (d) {
                     return "#000000";
             });
-    d3.select("[id=instrumentOptions]")
-            .select("table").remove();        
+  
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
 }
 
@@ -269,9 +267,7 @@ function hideSelections(){
     var clickedArchs = d3.selectAll("[class=dot_clicked]");
 
     clickedArchs.attr("class", "dot_hidden")
-            .style("opacity", 0.04);
-    d3.select("[id=instrumentOptions]")
-            .select("table").remove();        
+            .style("opacity", 0.04);     
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
 }
@@ -284,8 +280,7 @@ function showAllArchs(){
                     return "#000000";
             })
             .style("opacity",1);
-    d3.select("[id=instrumentOptions]")
-            .select("table").remove();        
+    
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
 }
@@ -331,11 +326,11 @@ function dot_click(d) {
 }
 
 
-function scatterPlot_option(){ // three options: zoom, drag_selection, drag_deselection
+function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, drag_deselection
 
     var x_axis = d3.select("[id=axisOptions_x]")[0][0].value;
     var y_axis = d3.select("[id=axisOptions_y]")[0][0].value;
-
+    
     if (d3.select("[id=scatterPlot_option]").attr("class")==="drag_deselection"){
 
 
@@ -483,14 +478,14 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
                     if(option=="selection"){
                         dots = d3.selectAll("[class=dot]")[0].forEach(function(d,i){
                             
-                            var x = get_output_value(x_axis,d.__data__);
-                            var y = get_output_value(y_axis,d.__data__);
+                            var x = get_var_value(x_axis,d.__data__);
+                            var y = get_var_value(y_axis,d.__data__);
                             var xCoord = xScale(x);
                             var yCoord = yScale(y);
 
                             if( 
-                                xCoord + margin.left>= b.x && xCoord + margin.left <= b.x+b.width && 
-                                yCoord + margin.top >= b.y && yCoord + margin.top  <= b.y+b.height
+                                xCoord + scatterPlot_margin.left>= b.x && xCoord + scatterPlot_margin.left <= b.x+b.width && 
+                                yCoord + scatterPlot_margin.top >= b.y && yCoord + scatterPlot_margin.top  <= b.y+b.height
                             ) {
                                 d3.select(d).attr("class","dot_clicked")
                                         .style("fill", "#0040FF");      
@@ -499,14 +494,14 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
 
                     }else{
                         dots = d3.selectAll("[class=dot_clicked]")[0].forEach(function(d,i){
-                            var x = get_output_value(x_axis,d.__data__);
-                            var y = get_output_value(y_axis,d.__data__);
+                            var x = get_var_value(x_axis,d.__data__);
+                            var y = get_var_value(y_axis,d.__data__);
                             var xCoord = xScale(x);
                             var yCoord = yScale(y);
 
                             if( 
-                                xCoord + margin.left>= b.x && xCoord + margin.left <= b.x+b.width && 
-                                yCoord + margin.top >= b.y && yCoord + margin.top  <= b.y+b.height
+                                xCoord + scatterPlot_margin.left>= b.x && xCoord + scatterPlot_margin.left <= b.x+b.width && 
+                                yCoord + scatterPlot_margin.top >= b.y && yCoord + scatterPlot_margin.top  <= b.y+b.height
                             ) {
                                 d3.select(d).attr("class","dot")
                                         .style("fill", function (d) {
@@ -534,51 +529,85 @@ function scatterPlot_option(){ // three options: zoom, drag_selection, drag_dese
 
 
 
-
-function get_max_output_value(varName,d){
-    /* For a given output variable, returns the minimum value.
+function get_max_value(varName,d){
+    /* For a given variable, returns the minimum value.
      * 
      * Inputs
      *      d: The dataset containing all datapoints.
     */
     var array =[];
-    var index = find_output_index(varName);
-    for (var i=0;i<d.length;i++){
-        // Store all the values of the given output to an array
-        array.push(d[i].outputs[index]);
+    var index = find_var_index(varName);
+    
+    if (inputNames.indexOf(varName) > -1){
+        // variable is input
+        for (var i=0;i<d.length;i++){
+            // Store all the values of the given input to an array
+            array.push(d[i].inputs[index]);
+        }
+    }else{
+        // variable is output
+        for (var i=0;i<d.length;i++){
+            // Store all the values of the given output to an array
+            array.push(d[i].outputs[index]);
+        }
     }
     return Math.max.apply(Math, array);
 }
-function get_min_output_value(varName,d){
-    /* For a given output variable, returns the minimum value.
+
+
+
+
+function get_min_value(varName,d){
+    /* For a given variable, returns the minimum value.
      * 
      * Inputs
      *      d: The dataset containing all datapoints.
     */
     
     var array =[];
-    var index = find_output_index(varName);
-    for (var i=0;i<d.length;i++){
-        // Store all the values of the given output to an array
-        array.push(d[i].outputs[index]);
+    var index = find_var_index(varName);
+    
+    if (inputNames.indexOf(varName) > -1){
+        // variable is input
+        for (var i=0;i<d.length;i++){
+            // Store all the values of the given input to an array
+            array.push(d[i].inputs[index]);
+        }
+    }else{
+        // variable is output
+        for (var i=0;i<d.length;i++){
+            // Store all the values of the given output to an array
+            array.push(d[i].outputs[index]);
+        }
     }
     return Math.min.apply(Math, array);
 }
 
 
-function find_output_index(varName){
+function find_var_index(varName){
     // Iterates over all outputs and returns the index of the output whose name matches with the name given as an argument.
     var ind = 0;
-    for(var i=0;i<outputNames.length;i++){
-        if (varName==outputNames[i]){
-            ind = i;
-            break;
+    if (inputNames.indexOf(varName) > -1){
+        // variable is an input
+        for(var i=0;i<inputNames.length;i++){
+            if (varName==inputNames[i]){
+                ind = i;
+                break;
+            }
+        }
+    }else{
+        // variable is an output
+        for(var i=0;i<outputNames.length;i++){
+            if (varName==outputNames[i]){
+                ind = i;
+                break;
+            }
         }
     }
     return ind;
 }
 
-function get_output_value(axis,d){
+function get_var_value(axis,d){
     /* Returns the value of the variable for a single point data d.
      * 
      *  Inputs:
@@ -586,7 +615,11 @@ function get_output_value(axis,d){
      *      d: Single point solution containing all variable names and their corresponding values 
     */
     
-    ind = find_output_index(axis);
-    return d.outputs[ind];
+    ind = find_var_index(axis);
+    if (inputNames.indexOf(axis) > -1){
+        return d.inputs[ind];
+    }else{
+        return d.outputs[ind];
+    }
 }
 

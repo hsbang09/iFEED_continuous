@@ -33,8 +33,10 @@ public class dataFileServlet extends HttpServlet {
     private Gson gson = new Gson();
     private static dataFileServlet instance=null;
     
-    private String path = "C:\\Users\\Bang\\Documents\\iFEED_GNC\\results\\";
-
+    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\astrodynamic_simulation_result_inc_modified2.xls";
+    
+    private int nInputs = 6;
+    private int nOutputs = 12;
     /**
      *
      * @throws ServletException
@@ -103,13 +105,10 @@ public class dataFileServlet extends HttpServlet {
             
             if (requestID.equalsIgnoreCase("import_data")){
 
-                int nInputs = 42;
-                int nOutputs = 6;
-
     //            String resultPath = request.getParameter("filePath");
-                String resultPath = path + "dataset.xls";
+                String resultPath = path;
                 Workbook results_xls = Workbook.getWorkbook( new File( resultPath ) );
-                Sheet meas = results_xls.getSheet("dataset");    
+                Sheet meas = results_xls.getSheet("Sheet1");    
                 ArrayList<Architecture> results = new ArrayList<>();
 
                 int nrows = meas.getRows();

@@ -54,7 +54,7 @@ function loadCandidateDrivingFeaturesWindow() {
     window.open('drivingFeatures.html');
 }
 
-function display_feature_option(){
+function display_filter_option(){
 
     d3.select("[id=basicInfoBox_div]").select("g").remove();
 
@@ -84,48 +84,60 @@ function display_feature_option(){
             
    //Slider Reference:    http://lokku.github.io/jquery-nstslider/     
    
-    for (var i=0;i<jsonObj_scatterPlot[0].inputs.length;i++){
-        var varName = jsonObj_scatterPlot[0].inputNames[i];
-        var slider = filterOptions_inputs.append("div")
+    for (var i=0;i<inputNames.length;i++){
+        var varName = inputNames[i];
+        var minVal = get_min_value(varName,jsonObj_scatterPlot);
+        var maxVal = get_max_value(varName,jsonObj_scatterPlot);
+        
+        var slider_div = filterOptions_inputs.append("div")
                 .attr("id",function(){
-                    return varName+"_sliderbar_div"
+                    return varName+"_sliderbar_div";
                 })
                 .style("width","100%")
                 .style("height","60px")
                 .style("float","left")
                 .style("margin-left","15px");
         slider_div.append("div").style("width","100%").style("height","30px").style("float","left").text(function(){
-                    return "include "+varName+": "
-                })
-                .append("input").attr("type","checkBox").attr("id",function(){
-                    return "include_"+varName
+                    return "include "+varName+": ";
                 });
-
-        d3.select("[id=include_"+varName+"]").on("click",function(d){
-            var includeVar = d3.select("[id=include_"+varName+"]")[0][0].checked;
-            if(includeVar){
-                d3.select("[id="+varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
-            } else{
-                d3.select("[id="+varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
-            }
-        });
-
+        slider_div.select('div')
+                .selectAll("input")
+                .data([{varName:varName,minVal:minVal,maxVal:maxVal}])
+                .enter()
+                .append("input").attr("type","checkBox").attr("id",function(d){
+                    return "include_"+d.varName;
+                });
+                
         slider_div.append("div").attr("class","leftLabel")
                 .style("float","left")
                 .style("margin-right","10px")
                 .style("margin-left","50px");
         var slider = slider_div.append("div").attr("id","nstSlider_"+varName)
-                .attr("class","nstSlider").attr("data-range_min",get_min_output_value(varName,jsonObj_scatterPlot)).attr("data-range_max",get_max_output_value(varName,jsonObj_scatterPlot))
-                .attr("data-cur_min",get_min_output_value(varName,jsonObj_scatterPlot)).attr("data-cur_max",get_max_output_value(varName,jsonObj_scatterPlot)).style("float","left").style("opacity",0.5);
+                .attr("class","nstSlider")
+                .attr("data-range_min",minVal)
+                .attr("data-range_max",maxVal)
+                .attr("data-cur_min",minVal)
+                .attr("data-cur_max",maxVal)
+                .style("float","left")
+                .style("opacity",0.5);
+        
         slider.append("div").attr("class","bar").style("float","left");
         slider.append("div").attr("class","leftGrip").style("float","left");
         slider.append("div").attr("class","rightGrip").style("float","left");
         slider_div.append("div").attr("class","rightLabel")
                 .style("float","left")
                 .style("margin-left","10px");
+        
+        d3.select("[id=include_"+varName+"]").on("click",function(d){
+            var includeVar = d3.select("[id=include_"+d.varName+"]")[0][0].checked
+            if(includeVar){
+                d3.select("[id="+d.varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",1);
+            } else{
+                d3.select("[id="+d.varName+"_sliderbar_div]").select("[class=nstSlider]").style("opacity",0.5);
+            }
+        });
     }
-
-
+    
     $('.nstSlider').nstSlider({
         "crossable_handles": false,
         "left_grip_selector": ".leftGrip",
@@ -136,7 +148,7 @@ function display_feature_option(){
             $(this).parent().find('.rightLabel').text(rightValue);
         }
     });
-    
+
     filterOptions.append("button")
             .attr("id","applyFilterButton_new")
             .attr("class","filterOptionButtons")
@@ -180,75 +192,31 @@ function applyFilter_new(){
 
 function applyFilter_within(){
 
-//    d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked
-//d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text()
-
-    var includeNSAT = d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked;
-    var NSAT_min_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=leftLabel]").text();
-    var NSAT_max_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeNPLANE = d3.select("[id=NPLANE_sliderbar_div]").select("input")[0][0].checked;
-    var NPLANE_min_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=leftLabel]").text();
-    var NPLANE_max_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeALT = d3.select("[id=ALT_sliderbar_div]").select("input")[0][0].checked;
-    var ALT_min_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=leftLabel]").text();
-    var ALT_max_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeINC = d3.select("[id=INC_sliderbar_div]").select("input")[0][0].checked;
-    var INC_min_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=leftLabel]").text();
-    var INC_max_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeRAAN = d3.select("[id=RAAN_sliderbar_div]").select("input")[0][0].checked;
-    var RAAN_min_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=leftLabel]").text();
-    var RAAN_max_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeFOV = d3.select("[id=FOV_sliderbar_div]").select("input")[0][0].checked;
-    var FOV_min_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=leftLabel]").text();
-    var FOV_max_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=rightLabel]").text();
+    var includeVars = [];
+    var thresholds_min = [];
+    var thresholds_max = [];
     
+    for (var i=0;i<inputNames.length;i++){
+        var varName = inputNames[i];
+        var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
+        includeVars.push(sliderbar_div.select('input')[0][0].checked);
+        thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
+        thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+    }
 
-    var clickedArchs = d3.selectAll("[class=dot_clicked]")[0].forEach(function (d) {
+    d3.selectAll("[class=dot_clicked]")[0].forEach(function (d) {
         var pass = true;
         
-        if(includeNSAT){
-            var NSATVal = d.__data__.NSAT;
-            if(NSATVal >= NSAT_min_threshold && NSATVal <= NSAT_max_threshold){
-            } else {
-                pass=false;
+        for (var i=0;i<includeVars.length;i++){
+            if (includeVars[i]){
+                var val = d.__data__.inputs[i];
+                if(val >= thresholds_min[i] && val <= thresholds_max[i]){
+                } else {
+                    pass=false;
+                    break;
+                }
             }
         }
-        if(includeNPLANE){
-            var NPLANEVal = d.__data__.NPLANE;
-            if(NPLANEVal >= NPLANE_min_threshold && NPLANEVal <= NPLANE_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeALT){
-            var ALTVal = d.__data__.ALT;
-            if(ALTVal >= ALT_min_threshold && ALTVal <= ALT_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeINC){
-            var INCVal = d.__data__.INC;
-            if(INCVal >= INC_min_threshold && INCVal <= INC_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeRAAN){
-            var RAANVal = d.__data__.RAAN;
-            if(RAANVal >= RAAN_min_threshold && RAANVal <= RAAN_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeFOV){
-            var FOVVal = d.__data__.FOV;
-            if(FOVVal >= FOV_min_threshold && FOVVal <= FOV_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        
         if (pass===true){
             d3.select(d).attr("class", "dot_clicked")
                         .style("fill", "#0040FF");
@@ -259,82 +227,38 @@ function applyFilter_within(){
                     });
         }
     });
-    
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());  
 }
 
 
 function applyFilter_add(){
 
-//    d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked
-//d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text()
-
-    var includeNSAT = d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked;
-    var NSAT_min_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=leftLabel]").text();
-    var NSAT_max_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeNPLANE = d3.select("[id=NPLANE_sliderbar_div]").select("input")[0][0].checked;
-    var NPLANE_min_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=leftLabel]").text();
-    var NPLANE_max_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeALT = d3.select("[id=ALT_sliderbar_div]").select("input")[0][0].checked;
-    var ALT_min_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=leftLabel]").text();
-    var ALT_max_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeINC = d3.select("[id=INC_sliderbar_div]").select("input")[0][0].checked;
-    var INC_min_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=leftLabel]").text();
-    var INC_max_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeRAAN = d3.select("[id=RAAN_sliderbar_div]").select("input")[0][0].checked;
-    var RAAN_min_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=leftLabel]").text();
-    var RAAN_max_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeFOV = d3.select("[id=FOV_sliderbar_div]").select("input")[0][0].checked;
-    var FOV_min_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=leftLabel]").text();
-    var FOV_max_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=rightLabel]").text();
+    var includeVars = [];
+    var thresholds_min = [];
+    var thresholds_max = [];
     
+    for (var i=0;i<inputNames.length;i++){
+        var varName = inputNames[i];
+        var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
+        includeVars.push(sliderbar_div.select('input')[0][0].checked);
+        thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
+        thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+    }
 
     var unClickedArchs = d3.selectAll("[class=dot]")[0].forEach(function (d) {
         var pass = true;
         
-        if(includeNSAT){
-            var NSATVal = d.__data__.NSAT;
-            if(NSATVal >= NSAT_min_threshold && NSATVal <= NSAT_max_threshold){
-            } else {
-                pass=false;
+        for (var i=0;i<includeVars.length;i++){
+            if (includeVars[i]){
+                var val = d.__data__.inputs[i];
+                if(val >= thresholds_min[i] && val <= thresholds_max[i]){
+                } else {
+                    pass=false;
+                    break;
+                }
             }
         }
-        if(includeNPLANE){
-            var NPLANEVal = d.__data__.NPLANE;
-            if(NPLANEVal >= NPLANE_min_threshold && NPLANEVal <= NPLANE_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeALT){
-            var ALTVal = d.__data__.ALT;
-            if(ALTVal >= ALT_min_threshold && ALTVal <= ALT_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeINC){
-            var INCVal = d.__data__.INC;
-            if(INCVal >= INC_min_threshold && INCVal <= INC_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeRAAN){
-            var RAANVal = d.__data__.RAAN;
-            if(RAANVal >= RAAN_min_threshold && RAANVal <= RAAN_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        if(includeFOV){
-            var FOVVal = d.__data__.FOV;
-            if(FOVVal >= FOV_min_threshold && FOVVal <= FOV_max_threshold){
-            } else {
-                pass=false;
-            }
-        }
-        
+
         if (pass===true){
             d3.select(d).attr("class", "dot_clicked")
                         .style("fill", "#0040FF");
@@ -353,8 +277,8 @@ function generatePresetCandidateDF(){
     var input_max = [];
     var input_min = [];
     for(var i=0;i<inputs.length;i++){
-        input_max.push(get_max_output_value(inputs[i],jsonObj_scatterPlot))
-        input_min.push(get_min_output_value(inputs[i],jsonObj_scatterPlot))
+        input_max.push(get_max_value(inputs[i],jsonObj_scatterPlot))
+        input_min.push(get_min_value(inputs[i],jsonObj_scatterPlot))
     }
 
     
@@ -846,8 +770,8 @@ function dfsort(){
 }
                 
 
-function openFeatureOptions(){
-    display_feature_option();
+function openFilterOptions(){
+    display_filter_option();
 }
                 
 function viewCandidateFeatures(){

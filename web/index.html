@@ -27,15 +27,10 @@ and open the template in the editor.
                 width: 90%;
                 height:30px;
             }
-
-
             #fixScatterPlotWindowButton_div{
                 float:left;
                 margin-left: 10px;
             }
-
-
-
             #dropdown_presetDesignFeatures{
                 margin-top: 7px;
             }
@@ -48,7 +43,7 @@ and open the template in the editor.
                 margin-bottom: 7px;
                 width: 170px;
             }
-            #openFeatureOptions{
+            #openFilterOptions{
                 margin-bottom: 7px;
                 width: 170px;
             }
@@ -219,7 +214,7 @@ and open the template in the editor.
                     </select>
                     <button type="button" id="viewCandidateFeatures">View candidate features</button>
                     <button type="button" id="getClassificationTreeButton">Build classification tree</button>
-                    <button type="button" id="openFeatureOptions">Open Feature Options</button>
+                    <button type="button" id="openFilterOptions">Open Filter Options</button>
 
                 </div>
 
@@ -253,28 +248,9 @@ and open the template in the editor.
         <script>
 
 
-
-
-var json_arch;
-var svg,objects;
-
-
-
-var color_drivingFeatures = d3.scale.category10();        
 var i_drivingFeatures=0;
 var filter_arch;
-
-var translate_tmp = [0,0];
-var scale_tmp = 0;
-var translate_tmp_local = [0,0];
-var scale_tmp_local = 0;
-
-var userDefFilterExpressionHistory = [];
-userDefFilterExpressionHistory.length=0;
-var userDefFilters = [];
 var jsonObj_tree;
-
-
 
 // Global variables
 var new_data_import = true;
@@ -282,18 +258,25 @@ var presetGenerated = false;
 var jsonObj_scatterPlot = null;
 var nInputs, nOutputs, inputNames, outputNames;
 
-// Scatter plot size params
+// Scatter plot params
 var scatterPlot_margin = {top: 20, right: 20, bottom: 30, left: 60},
 scatterPlot_width = 960 - scatterPlot_margin.left - scatterPlot_margin.right,
 scatterPlot_height = 540 - scatterPlot_margin.top - scatterPlot_margin.bottom;
+var objects, xScale,yScale,xAxis,yAxis;
+var translate_tmp = [0,0];
+var scale_tmp = 0;
+var translate_tmp_local = [0,0];
+var scale_tmp_local = 0;
+
 
 // Candidate driving features
 var candidateDrivingFeatures = [];
 var candidateDrivingFeatures_names = [];
+var userDefFilterExpressionHistory = [];
+var userDefFilters = [];
 
-
-
-
+// Driving Features
+var color_drivingFeatures = d3.scale.category10();    
 
 
 
@@ -371,12 +354,10 @@ function draw_archBasicInfoTable(data) {
             .style("margin-right","10px");
 
     var columns = [];
-    columns.push({columnName: "NSAT"});
-    columns.push({columnName: "NPLANE"});
-    columns.push({columnName: "ALT"});
-    columns.push({columnName: "INC"});
-    columns.push({columnName: "RAAN"});
-    columns.push({columnName: "FOV"});
+    for(var i=0;i<inputNames.length;i++){
+        columns.push({columnName:inputNames[i]});
+    }
+    
 
     // create table header
     input_table.append('thead').append('tr')
@@ -393,10 +374,6 @@ function draw_archBasicInfoTable(data) {
             .style("border","1px solid black")
             .style("font-size", "20px");
 
-
-
-
-
     // create table body
     input_table.append('tbody')
             .append('tr')
@@ -412,8 +389,8 @@ function draw_archBasicInfoTable(data) {
             .style("font-size", "18px");
 
 
-    var objective_table = archInfoBox.append("table")
-                                    .attr("id", "archInfo_objective_table")
+    var output_table = archInfoBox.append("table")
+                                    .attr("id", "archInfo_output_table")
                                     .style("float","left")
                                     .style("margin-left","20px")
                                     .style("margin-top","10px")
@@ -427,7 +404,7 @@ function draw_archBasicInfoTable(data) {
     columns.push({columnName: "Value"});
 
     // create table header
-    objective_table.append('thead').append('tr')
+    output_table.append('thead').append('tr')
             .selectAll('th')
             .data(columns).enter()
             .append('th')
@@ -442,15 +419,17 @@ function draw_archBasicInfoTable(data) {
             .style("font-size", "20px");
 
     var rows = [];
-    rows.push({name1:"avg_global",val1:data.objectives[0],name2:"max_global",val2:data.objectives[6]});
-    rows.push({name1:"avg_trop",val1:data.objectives[1],name2:"max_trop",val2:data.objectives[7]});
-    rows.push({name1:"avg_NH",val1:data.objectives[2],name2:"max_NH",val2:data.objectives[8]});
-    rows.push({name1:"avg_SH",val1:data.objectives[3],name2:"max_SH",val2:data.objectives[9]});
-    rows.push({name1:"avg_polar",val1:data.objectives[4],name2:"max_poar",val2:data.objectives[10]});
-    rows.push({name1:"avg_US",val1:data.objectives[5],name2:"max_US",val2:data.objectives[11]});
-
+    if (outputNames.length % 2 == 0){
+        num = outputNames.length/2;
+    }else{
+        num  = outputNames.length/2 + 1;
+    }
+    for(var i=0;i<num;i++){
+        rows.push({name1:outputNames[2*i],val1:data.outputs[2*i],name2:outputNames[2*i+1],val2:data.outputs[2*i+1]});
+    }
+        
     // create table body
-    objective_table.append('tbody')
+    output_table.append('tbody')
             .selectAll('tr')
             .data(rows).enter()
             .append('tr')
@@ -470,19 +449,15 @@ function draw_archBasicInfoTable(data) {
             })
             .attr("width","120px")
             .style("border","1px solid black");
-
-
-
-
 }
 
-    function numOfArchs(){
-        var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
-        return leng;
-    }
-    function numOfSelectedArchs(){
-        return d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();
-    }
+function numOfArchs(){
+    var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
+    return leng;
+}
+function numOfSelectedArchs(){
+    return d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();
+}
 
 
 d3.select("[id=draw_scatterplot]").on("click", import_data);
