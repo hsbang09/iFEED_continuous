@@ -16,17 +16,7 @@ and open the template in the editor.
         <link type="text/css" rel="stylesheet" href="js/libs/jquery.nstSlider.css">
         <style>
 
-
-            #resultFileURL{
-                width: 650px;
-            }
-            #resultFileURLInput{
-                float:left;
-                margin-left:30px;
-                margin-top: 8px;
-                width: 90%;
-                height:30px;
-            }
+            
             #fixScatterPlotWindowButton_div{
                 float:left;
                 margin-left: 10px;
@@ -84,13 +74,6 @@ and open the template in the editor.
                 font-size: 15px;
             }
 
-
-            .toggle-button { background-color: white; margin-top: 1px; border-radius: 20px; border: 2px solid #232323; height: 18px; cursor: pointer; width: 43px; position: absolute; display: inline-block; user-select: none; -webkit-user-select: none; -ms-user-select: none; -moz-user-select: none; }
-            .toggle-button button { cursor: pointer; outline: 0; display:block; position: absolute; left: 1px; top: 2px; border-radius: 100%; width: 18px; height: 20px; background-color: white; float: left; margin: -3px 0 0 -3px; border: 2px solid #232323; transition: left 0.3s; }
-            .toggle-button-selected { background-color: #83B152; border: 2px solid #232323;}
-            .toggle-button-selected button { left: 26px; top: 0; margin: -1px 0 0 0; border: 2px solid #232323; width: 18px; height: 21px; box-shadow: 0 0 4px rgba(0,0,0,0.1); }
-
-
             #filter_inputs{
                 width:95%;
                 float:left;
@@ -136,7 +119,23 @@ and open the template in the editor.
         <div id="title" style="float:left;margin-left:30px;margin-top:15px;width:80%">
             <h2>iFEED Web App</h2>
         </div>
-
+        
+        <div id="data_file_info_div" style="float:left;width:100%; margin-top: 10px;height: 30px">
+            <div style="float:left; margin-left:31px; height: 30px">
+               Data file name: 
+               <input type="text" id="data_file_URL_input" value="C:\Users\Bang\Documents\iFEED_continuous\results\DEMS_dataset.xls" style="width:500px; height: 20px; margin-left: 4px;"/>
+            </div>
+            <div style="float:left; margin-left:10px; height: 30px">
+               Number of inputs:
+               <input type="text" id="data_file_numInputs" value="7" style="width:40px; height: 20px; margin-left: 3px;"/>
+            </div>
+            <div style="float:left; margin-left:10px; height: 30px">
+               Number of outputs:
+               <input type="text" id="data_file_numOutputs" value="8" style="width:40px; height: 20px; margin-left: 3px;"/>
+            </div>
+        </div>
+ 
+        
         <div id="options_horizontal" style="width:95%;float:left; margin-left: 30px; margin-top:10px; margin-bottom: 5px; height: 30px">
             <button id="draw_scatterplot" style="float:left;margin-left:5px;">Draw Scatterplot</button>
             <div style="float:left; margin-left: 15px">X axis:</div>
@@ -262,7 +261,7 @@ var nInputs, nOutputs, inputNames, outputNames;
 var scatterPlot_margin = {top: 20, right: 20, bottom: 30, left: 60},
 scatterPlot_width = 960 - scatterPlot_margin.left - scatterPlot_margin.right,
 scatterPlot_height = 540 - scatterPlot_margin.top - scatterPlot_margin.bottom;
-var objects, xScale,yScale,xAxis,yAxis;
+var objects, xScale,yScale,xAxis,yAxis,xMap,yMap;
 var translate_tmp = [0,0];
 var scale_tmp = 0;
 var translate_tmp_local = [0,0];
@@ -289,11 +288,16 @@ function import_data(){
         reset_drawing_scatterPlot();
         draw_scatterPlot(jsonObj_scatterPlot);
     }else{
+        
+        var data_file_URL_input = d3.select('[id=data_file_URL_input]')[0][0].value;
+        var numInputs = d3.select('[id=data_file_numInputs]')[0][0].value;
+        var numOutputs = d3.select('[id=data_file_numOutputs]')[0][0].value;
+        
         $.ajax(
                 {
                     url: "dataFileServlet",
                     type: "POST",
-                    data: {ID: "import_data"},
+                    data: {ID: "import_data",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
                     async: false,
                     success: function (data, textStatus, jqXHR)
                     {

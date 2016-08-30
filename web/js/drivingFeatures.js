@@ -63,11 +63,11 @@ function display_filter_option(){
             .attr("id","filter_title")
             .style("width","90%")
             .style("margin-top","10px")
-            .style("margin-bottom","10px")
+            .style("margin-bottom","5px")
             .style("margin-left","2px")
             .style("float","left")
             .append("p")
-            .text("Feature Setting")
+            .text("Filter Setting")
             .style("font-size", "18px");
     var filterOptions = archInfoBox.append("div")
             .attr("id","filter_options")
@@ -80,6 +80,7 @@ function display_filter_option(){
             .style("width","100%")
             .style("height","380px")
             .style("float","left")
+            .style("overflow","scroll")
             .style("border","solid black 1px");
             
    //Slider Reference:    http://lokku.github.io/jquery-nstslider/     
@@ -95,6 +96,7 @@ function display_filter_option(){
                 })
                 .style("width","100%")
                 .style("height","60px")
+                .style("margin-top",'3px')
                 .style("float","left")
                 .style("margin-left","15px");
         slider_div.append("div").style("width","100%").style("height","30px").style("float","left").text(function(){
@@ -280,7 +282,6 @@ function generatePresetCandidateDF(){
         input_max.push(get_max_value(inputs[i],jsonObj_scatterPlot))
         input_min.push(get_min_value(inputs[i],jsonObj_scatterPlot))
     }
-
     
     for (var i=0;i<inputs.length;i++){
         var mid = (input_max[i]-input_min[i])/2 + input_min[i];
@@ -319,103 +320,41 @@ function generatePresetCandidateDF(){
 }
 
 function addCandidateDF(){
-    var includeNSAT = d3.select("[id=NSAT_sliderbar_div]").select("input")[0][0].checked;
-    var NSAT_min_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=leftLabel]").text();
-    var NSAT_max_threshold = + d3.select("[id=NSAT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeNPLANE = d3.select("[id=NPLANE_sliderbar_div]").select("input")[0][0].checked;
-    var NPLANE_min_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=leftLabel]").text();
-    var NPLANE_max_threshold = + d3.select("[id=NPLANE_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeALT = d3.select("[id=ALT_sliderbar_div]").select("input")[0][0].checked;
-    var ALT_min_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=leftLabel]").text();
-    var ALT_max_threshold = + d3.select("[id=ALT_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeINC = d3.select("[id=INC_sliderbar_div]").select("input")[0][0].checked;
-    var INC_min_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=leftLabel]").text();
-    var INC_max_threshold = + d3.select("[id=INC_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeRAAN = d3.select("[id=RAAN_sliderbar_div]").select("input")[0][0].checked;
-    var RAAN_min_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=leftLabel]").text();
-    var RAAN_max_threshold = + d3.select("[id=RAAN_sliderbar_div]").select("[class=rightLabel]").text();
-    var includeFOV = d3.select("[id=FOV_sliderbar_div]").select("input")[0][0].checked;
-    var FOV_min_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=leftLabel]").text();
-    var FOV_max_threshold = + d3.select("[id=FOV_sliderbar_div]").select("[class=rightLabel]").text();
+    
+    var includeVars = [];
+    var thresholds_min = [];
+    var thresholds_max = [];
+    var expression="";
+    
+    for (var i=0;i<inputNames.length;i++){
+        var varName = inputNames[i];
+        var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
+        includeVars.push(sliderbar_div.select('input')[0][0].checked);
+        thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
+        thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+    }
     
 //  two options
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
 
-    var expression="";
-    var first=true;
-    
-    if(includeNSAT){
-        expression = expression + "NSAT" + "-";
-        if(NSAT_min_threshold===NSAT_max_threshold){
-            expression = expression + "exact:" + NSAT_min_threshold;
-        }else{
-            expression = expression + "min:" + NSAT_min_threshold + "-" + "max:" + NSAT_max_threshold;
-        }
-        first=false;
-    }
-    if(includeNPLANE){
-        if(first){
-            expression = expression + "NPLANE" + "-";first=false;
-        }else{
-            expression = expression + " and NPLANE" + "-";
-        }
-        
-        if(NPLANE_min_threshold===NPLANE_max_threshold){
-            expression = expression + "exact:" + NPLANE_min_threshold;
-        }else{
-            expression = expression + "min:" + NPLANE_min_threshold + "-" + "max:" + NPLANE_max_threshold;
+    for (var i=0;i<includeVars.length;i++){
+        if (includeVars[i]){
+            var varName = inputNames[i];
+
+            if(expression==""){
+                expression = varName + "-";
+            }else{
+                expression = expression + " and " + varName + "-";
+            }
+            if(thresholds_min[i]===thresholds_max[i]){
+                expression = expression + "exact:" + thresholds_min[i];
+            }else{
+                expression = expression + "min:" + thresholds_min[i] + "-" + "max:" + thresholds_max[i];
+            }
         }
     }
-    if(includeALT){
-        if(first){
-            expression = expression + "ALT" + "-";first=false;
-        }else{
-            expression = expression + " and ALT" + "-";
-        }
-        
-        if(ALT_min_threshold===ALT_max_threshold){
-            expression = expression + "exact:" + ALT_min_threshold;
-        }else{
-            expression = expression + "min:" + ALT_min_threshold + "-" + "max:" + ALT_max_threshold;
-        }
-    }
-    if(includeINC){
-        if(first){
-            expression = expression + "INC" + "-";first=false;
-        }else{
-            expression = expression + " and INC" + "-";
-        }
-        if(INC_min_threshold===INC_max_threshold){
-            expression = expression + "exact:" + INC_min_threshold;
-        }else{
-            expression = expression + "min:" + INC_min_threshold + "-" + "max:" + INC_max_threshold;
-        }
-    }
-    if(includeRAAN){
-        if(first){
-            expression = expression + "RAAN" + "-";first=false;
-        }else{
-            expression = expression + " and RAAN" + "-";
-        }
-        if(RAAN_min_threshold===RAAN_max_threshold){
-            expression = expression + "exact:" + RAAN_min_threshold;
-        }else{
-            expression = expression + "min:" + RAAN_min_threshold + "-" + "max:" + RAAN_max_threshold;
-        }
-    }
-    if(includeFOV){
-        if(first){
-            expression = expression + "FOV" + "-";first=false;
-        }else{
-            expression = expression + " and FOV" + "-";
-        }
-        if(FOV_min_threshold===FOV_max_threshold){
-            expression = expression + "exact:" + FOV_min_threshold;
-        }else{
-            expression = expression + "min:" + FOV_min_threshold + "-" + "max:" + FOV_max_threshold;
-        }
-    }
+
     candidateDrivingFeatures.push(expression);
     candidateDrivingFeatures_names.push(expression);
 }
@@ -428,8 +367,7 @@ var yAxis_df;
 var dfbar_width;
           
 function display_drivingFeatures(source,sortby) {
-    
-    
+
     var size = source.length;
     var drivingFeatures = [];
     var drivingFeatureNames = [];
@@ -439,7 +377,8 @@ function display_drivingFeatures(source,sortby) {
     var supps=[];
     var conf1s=[];
     var conf2s=[];
-    console.log(size);
+
+
     for (var i=0;i<size;i++){
         lifts.push(source[i].lift);
         supps.push(source[i].supp);
@@ -489,8 +428,6 @@ function display_drivingFeatures(source,sortby) {
     yAxis_df = d3.svg.axis()
             .scale(yScale_df)
             .orient("left");
-
-    var drivingFeaturesDisplayBox = d3.select("[id=drivingFeaturesAndSensitivityAnalysis_div]");
 
     d3.select("[id=basicInfoBox_div]").select("g").remove();
     var infoBox = d3.select("[id=basicInfoBox_div]")

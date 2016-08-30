@@ -26,7 +26,7 @@ function draw_scatterPlot(source) {
     xMap = function (d) {
         return xScale(xValue(d));
     }; // data -> display
-    var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
 
     // setup y
     yValue = function (d) {
@@ -40,7 +40,7 @@ function draw_scatterPlot(source) {
     yMap = function (d) {
         return yScale(yValue(d));
     }; // data -> display
-    var yAxis = d3.svg.axis().scale(yScale).orient("left");
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
 
     var svg = d3.select("[id=scatterPlotFigure]")
         .append("svg")
@@ -344,8 +344,6 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
             .on("mousemove",null)
             .on("mouseup",null);
 
-
-
         d3.select("[id=scatterPlot_option]").attr("class","zoom")
                 .style("background-color", "#DFDFDF");
 
@@ -355,7 +353,7 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
                 d3.behavior.zoom()
                         .x(xScale)
                         .y(yScale)
-                        .scaleExtent([0.4, 20])
+                        .scaleExtent([0.4/scale_tmp_local, 20/scale_tmp_local])
                         .on("zoom", function (d) {
 
                             var svg = d3.select("[id=scatterPlotFigure]")

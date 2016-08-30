@@ -33,10 +33,10 @@ public class dataFileServlet extends HttpServlet {
     private Gson gson = new Gson();
     private static dataFileServlet instance=null;
     
-    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\astrodynamic_simulation_result_inc_modified2.xls";
-    
-    private int nInputs = 6;
-    private int nOutputs = 12;
+//    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\DEMS_dataset.xls";
+//    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\astrodynamic_simulation_result_inc_modified2.xls";
+//    private int nInputs = 7;
+//    private int nOutputs = 8;
     /**
      *
      * @throws ServletException
@@ -104,6 +104,11 @@ public class dataFileServlet extends HttpServlet {
         try {
             
             if (requestID.equalsIgnoreCase("import_data")){
+                
+                
+                String path = request.getParameter("path");
+                int nInputs = Integer.parseInt(request.getParameter("numInputs"));
+                int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
 
     //            String resultPath = request.getParameter("filePath");
                 String resultPath = path;
