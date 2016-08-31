@@ -57,7 +57,11 @@ and open the template in the editor.
             .grid path {
                 stroke-width: 0;
             }
-
+            
+            th, td {
+                padding: 5px;
+                text-align: left;
+            }
 
             #arch_cell{ 
                 border: 1px solid black;
@@ -177,6 +181,7 @@ and open the template in the editor.
                     margin-top: 7px;">
 
                     <button type="button"  id="cancel_selection" style="margin-top:5px;width: 170px;">Cancel all selections</button>
+                    <button type="button"  id="select_complement" style="margin-top:5px;width: 170px;">Select complement</button>
                     <button type="button"  id="hide_selection" style="margin-top:5px;width: 170px;">Hide selections</button>
                     <button type="button"  id="show_all_archs" style="margin-top:5px;width: 170px;">Show hidden archs</button>
 
@@ -230,7 +235,7 @@ and open the template in the editor.
             <div id="basicInfoBox_div" style="                
                 float:left;
                 border: 1px black double;
-                width: 800px;
+                width: 1161px;
                 height: 430px;
                 overflow: scroll;
                 margin-left: 0px;
@@ -252,7 +257,6 @@ var filter_arch;
 var jsonObj_tree;
 
 // Global variables
-var new_data_import = true;
 var presetGenerated = false;
 var jsonObj_scatterPlot = null;
 var nInputs, nOutputs, inputNames, outputNames;
@@ -283,60 +287,64 @@ try {
 
 function import_data(){
     // Imports the data from the data file.
-    
-    if (new_data_import===false){
-        reset_drawing_scatterPlot();
-        draw_scatterPlot(jsonObj_scatterPlot);
-    }else{
-        
-        var data_file_URL_input = d3.select('[id=data_file_URL_input]')[0][0].value;
-        var numInputs = d3.select('[id=data_file_numInputs]')[0][0].value;
-        var numOutputs = d3.select('[id=data_file_numOutputs]')[0][0].value;
-        
-        $.ajax(
-                {
-                    url: "dataFileServlet",
-                    type: "POST",
-                    data: {ID: "import_data",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
-                    async: false,
-                    success: function (data, textStatus, jqXHR)
-                    {
-                        jsonObj_scatterPlot = JSON.parse(data);
-                    },
-                    complete: function () {
-                        nInputs = jsonObj_scatterPlot[0].inputs.length;
-                        nOutputs = jsonObj_scatterPlot[0].outputs.length;
-                        inputNames = jsonObj_scatterPlot[0].inputNames;
-                        outputNames = jsonObj_scatterPlot[0].outputNames;
-                        
-                        d3.select("[id=axisOptions_x]").selectAll("option")
-                                .data(outputNames)
-                                .enter()
-                                .append("option")
-                                .attr("value",function(d){
-                                    return d
-                                })
-                                .text(function(d){return d});
-                        d3.select("[id=axisOptions_y]").selectAll("option")
-                                .data(outputNames)
-                                .enter()
-                                .append("option")
-                                .attr("value",function(d){
-                                    return d
-                                })
-                                .text(function(d){return d});
 
-                        reset_drawing_scatterPlot();
-                        draw_scatterPlot(jsonObj_scatterPlot);
-                        new_data_import = false; 
-                        d3.select("[id=basicInfoBox_div]").select("g").remove();
-                    },
-                    error: function (jqXHR, textStatus, errorThrown)
-                    {
-                        alert("error");
-                    }
-                });
-    }
+    var data_file_URL_input = d3.select('[id=data_file_URL_input]')[0][0].value;
+    var numInputs = d3.select('[id=data_file_numInputs]')[0][0].value;
+    var numOutputs = d3.select('[id=data_file_numOutputs]')[0][0].value;
+    $.ajax(
+            {
+                url: "dataFileServlet",
+                type: "POST",
+                data: {ID: "import_data",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
+                async: false,
+                success: function (data, textStatus, jqXHR)
+                {
+                    jsonObj_scatterPlot = JSON.parse(data);
+                },
+                complete: function () {
+                    nInputs = jsonObj_scatterPlot[0].inputs.length;
+                    nOutputs = jsonObj_scatterPlot[0].outputs.length;
+                    inputNames = jsonObj_scatterPlot[0].inputNames;
+                    outputNames = jsonObj_scatterPlot[0].outputNames;
+
+                    d3.select("[id=axisOptions_x]").selectAll("option").remove();
+                    d3.select("[id=axisOptions_y]").selectAll("option").remove();
+                    presetGenerated = false
+                    translate_tmp = [0,0];
+                    scale_tmp = 0;
+                    translate_tmp_local = [0,0];
+                    scale_tmp_local = 0;
+                    candidateDrivingFeatures = [];
+                    candidateDrivingFeatures_names = [];
+                    userDefFilterExpressionHistory = [];
+                    userDefFilters = [];
+                    
+                    d3.select("[id=axisOptions_x]").selectAll("option")
+                            .data(outputNames)
+                            .enter()
+                            .append("option")
+                            .attr("value",function(d){
+                                return d
+                            })
+                            .text(function(d){return d});
+                    d3.select("[id=axisOptions_y]").selectAll("option")
+                            .data(outputNames)
+                            .enter()
+                            .append("option")
+                            .attr("value",function(d){
+                                return d
+                            })
+                            .text(function(d){return d});
+
+                    reset_drawing_scatterPlot();
+                    draw_scatterPlot(jsonObj_scatterPlot);
+                    d3.select("[id=basicInfoBox_div]").select("g").remove();
+                },
+                error: function (jqXHR, textStatus, errorThrown)
+                {
+                    alert("error");
+                }
+            });
 }
 
 
@@ -457,7 +465,8 @@ function draw_archBasicInfoTable(data) {
 
 function numOfArchs(){
     var leng = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot]").size();
-    return leng;
+    var leng2 = d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();
+    return leng+leng2;
 }
 function numOfSelectedArchs(){
     return d3.select("[id=scatterPlotFigure]").select("svg").selectAll("[class=dot_clicked]").size();

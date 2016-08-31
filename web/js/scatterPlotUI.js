@@ -138,18 +138,31 @@ function draw_scatterPlot(source) {
     var dots = objects.selectAll(".dot")
             .data(source)
             .enter().append("circle")
-            .attr("class", "dot")
+            .attr("class", function(d){
+                if(d.selected==true){
+                    return "dot_clicked";
+                }else{
+                    return "dot";
+                }
+            })
             .attr("r", 4)
             .attr("transform", function (d) {
                 var xCoord = xMap(d);
                 var yCoord = yMap(d);
                 return "translate(" + xCoord + "," + yCoord + ")";
             })
-//                .attr("cx", xMap)
-//                .attr("cy", yMap)
             .style("fill", function (d) {
-                return "#000000";
+                if (d.selected==true){
+                    return "#0040FF";
+                }else{
+                    return "#000000";
+                }
+                
             });
+
+    d3.selectAll(".dot")[0].forEach(function(d){
+        d.__data__.selected=false;
+    });
 
     dots.on("mouseover", dot_mouseover)
         .on("mouseout", function (d) {
@@ -166,22 +179,49 @@ function draw_scatterPlot(source) {
     d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
     d3.select("[id=hide_selection]").on("click",hideSelections);
     d3.select("[id=show_all_archs]").on("click",showAllArchs);
+    d3.select("[id=select_complement]").on("click",selectComplement);
     d3.select("[id=openFilterOptions]").on("click",openFilterOptions);
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
+    d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
     d3.select("[id=scatterPlot_option]").on("click",scatterPlot_toggle_option);
     d3.select("[id=viewCandidateFeatures]").on("click",viewCandidateFeatures);
     if (presetGenerated === false){
         generatePresetCandidateDF();
     }
     
-   d3.select("[id=axisOptions_x]").on("change",function(){
-        reset_drawing_scatterPlot();
-        draw_scatterPlot(jsonObj_scatterPlot);
-   });
-   d3.select("[id=axisOptions_y]").on("change",function(){
-        reset_drawing_scatterPlot();
-        draw_scatterPlot(jsonObj_scatterPlot);
-   });
+    d3.select("[id=scatterPlot_option]").attr("class","zoom")
+            .style("background-color", "#DFDFDF");
+    
+    d3.select("[id=axisOptions_x]").on("change",function(){
+
+         d3.selectAll(".dot")[0].forEach(function(d){
+             d.__data__.selected=false;
+         });
+         d3.selectAll(".dot_hidden")[0].forEach(function(d){
+             d.__data__.selected=false;
+         });
+         d3.selectAll(".dot_clicked")[0].forEach(function(d){
+             d.__data__.selected=true;
+         });
+
+         reset_drawing_scatterPlot();
+         draw_scatterPlot(source);
+    });
+    d3.select("[id=axisOptions_y]").on("change",function(){
+
+         d3.selectAll(".dot")[0].forEach(function(d){
+             d.__data__.selected=false;
+         });
+         d3.selectAll(".dot_hidden")[0].forEach(function(d){
+             d.__data__.selected=false;
+         });
+         d3.selectAll(".dot_clicked")[0].forEach(function(d){
+             d.__data__.selected=true;
+         });
+
+         reset_drawing_scatterPlot();
+         draw_scatterPlot(source);
+    });
 }
 
 
@@ -284,7 +324,21 @@ function showAllArchs(){
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
 }
+function selectComplement(){
 
+    var unselected = d3.selectAll("[class=dot]");
+    var selected = d3.selectAll("[class=dot_clicked]")
+
+    selected.attr("class", "dot")
+            .style("fill", function (d) {
+                    return "#000000";
+            });
+    unselected.attr("class", "dot_clicked")
+            .style("fill", "#0040FF");
+    
+    d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
+    d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
+}
 
 
 
@@ -419,7 +473,6 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
 
         svg_tmp
             .on( "mousedown", function() {
-//                        d3.selectAll("[class=dot_selected]").attr("class","dot"); 
                 var p = d3.mouse( this);
                 svg_tmp.append( "rect")
                         .attr({

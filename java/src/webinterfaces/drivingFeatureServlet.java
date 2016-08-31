@@ -30,10 +30,6 @@ public class drivingFeatureServlet extends HttpServlet {
     private Gson gson = new Gson();
     Scheme scheme;
     boolean init = false;
-    int norb;
-    int ninstr;
-    String[] instrument_list;
-    String[] orbit_list;
     String displayOutput;
     DrivingFeaturesGenerator dfsGen;
     ArrayList<DrivingFeature> DFs;
@@ -318,10 +314,6 @@ public class drivingFeatureServlet extends HttpServlet {
 //          
 //            dfsGen.addUserDefFilter(names_input,expressions_input);
 //        }
-        else if(requestID.equalsIgnoreCase("sortDrivingFeatures")){
-            
-
-        }
         }
         catch(Exception e){ e.printStackTrace();}
         

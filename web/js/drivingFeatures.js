@@ -33,8 +33,6 @@ function getDrivingFeatures() {
         
         async: false,
         success: function (data, textStatus, jqXHR){
-//            sortedDrivingFeatures = data;
-            console.log(JSON.parse(data));
             sortedDrivingFeatures = JSON.parse(data);
         },
         complete: function (data){
@@ -608,6 +606,17 @@ function display_drivingFeatures(source,sortby) {
                     var conf = d.conf;
                     var conf2 = d.conf2;
 
+                    d3.selectAll("[class=dot]")[0].forEach(function(d){
+                        if(evalFeatureExpression(expression,d.__data__)){
+                            d3.select(d).style("fill", "#F455D7");
+                        }
+                    });
+                    d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
+                        if(evalFeatureExpression(expression,d.__data__)){
+                            d3.select(d).style("fill", "#F455D7");
+                        }
+                    });
+                    
                     d3.selectAll("[class=bar]").filter(function(d){
                         if(d.id===tmp){
                             return true;
@@ -617,9 +626,6 @@ function display_drivingFeatures(source,sortby) {
                     }).style("stroke-width",1.5)
                             .style("stroke","black");
 
-                      
-
-                    
                     var fo = d3.select("[id=basicInfoBox_div]").select("[class=dfbars_svg]")
                                     .append("g")
                                     .attr("id","foreignObject_tooltip")
@@ -652,8 +658,6 @@ function display_drivingFeatures(source,sortby) {
                         return output;
                     }).style("color", "#F7FF55");                         
 
-           
-
                 })
                 .on("mouseout",function(d){
                     d3.select("[id=basicInfoBox_div]").selectAll("[id=featureInfo_tooltip]").remove();
@@ -667,6 +671,13 @@ function display_drivingFeatures(source,sortby) {
                            }
                        }).style("stroke-width",0)
                                .style("stroke","black");
+                       
+                    d3.selectAll("[class=dot]")[0].forEach(function(d){
+                        d3.select(d).style("fill", "#000000");
+                    });
+                    d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
+                        d3.select(d).style("fill", "#0040FF");
+                    });
                 });
 
 //
@@ -697,6 +708,83 @@ function display_drivingFeatures(source,sortby) {
     
     d3.select("[id=dfsort_options]").on("change",dfsort);
 }
+
+
+function evalSingleFeatureExpression(compare,threshold,value){
+    if (compare=="exact"){
+        if (abs(threshold-value) <= 0.0001){
+            return true;
+        }
+    }else if (compare=="min"){
+        if(value >= threshold){
+            return true;
+        }
+    }else if (compare=="max"){
+        if (value <= threshold){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+function evalFeatureExpression(expression, d){
+
+    var exp_split = expression.split(" and ");
+    var passed = true;
+    
+    for(var i=0;i<exp_split.length;i++){
+        var thisExp = exp_split[i];
+//  two options
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
+// connected with &
+            
+        var input_var_name = thisExp.split("-")[0];  
+        var input_var_index = -1;
+        input_var_index = inputNames.indexOf(input_var_name);
+        
+        var value = + d.inputs[input_var_index]
+        
+        for(var j=0;j<thisExp.split("-").length-1;j++){
+            var compare = thisExp.split("-")[j+1].split(":")[0];
+            var threshold = + thisExp.split("-")[j+1].split(":")[1];
+            if(!evalSingleFeatureExpression(compare,threshold,value)){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+
+
+
+
+
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
                 
 
 function dfsort(){
