@@ -1,6 +1,6 @@
-/build
-/dist
-/conf
-/nbproject
+/build/
+/dist/
+/conf/
+/nbproject/
 /results/
 /build.xml
