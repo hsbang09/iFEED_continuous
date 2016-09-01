@@ -50,7 +50,7 @@ function draw_scatterPlot(source) {
                 d3.behavior.zoom()
                 .x(xScale)
                 .y(yScale)
-                .scaleExtent([0.4, 20])
+                .scaleExtent([0.4, 30])
                 .on("zoom", function (d) {
 
                     svg = d3.select("[id=scatterPlotFigure]")
@@ -407,7 +407,7 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
                 d3.behavior.zoom()
                         .x(xScale)
                         .y(yScale)
-                        .scaleExtent([0.4/scale_tmp_local, 20/scale_tmp_local])
+                        .scaleExtent([0.4/scale_tmp_local, 30/scale_tmp_local])
                         .on("zoom", function (d) {
 
                             var svg = d3.select("[id=scatterPlotFigure]")

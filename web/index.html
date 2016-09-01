@@ -254,12 +254,14 @@ and open the template in the editor.
 
 var i_drivingFeatures=0;
 var filter_arch;
-var jsonObj_tree;
+
 
 // Global variables
 var presetGenerated = false;
 var jsonObj_scatterPlot = null;
 var nInputs, nOutputs, inputNames, outputNames;
+var jsonObj_tree;
+
 
 // Scatter plot params
 var scatterPlot_margin = {top: 20, right: 20, bottom: 30, left: 60},
@@ -293,7 +295,7 @@ function import_data(){
     var numOutputs = d3.select('[id=data_file_numOutputs]')[0][0].value;
     $.ajax(
             {
-                url: "dataFileServlet",
+                url: "DataFileServlet",
                 type: "POST",
                 data: {ID: "import_data",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
                 async: false,

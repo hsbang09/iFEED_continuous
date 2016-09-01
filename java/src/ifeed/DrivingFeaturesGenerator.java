@@ -164,28 +164,12 @@ public class DrivingFeaturesGenerator {
             i = i+1;
         }
         
-        
-
-//        for (DrivingFeature userDef1:userDef){
-//            
-//            scheme.setName(userDef1.getType());
-//            double support = computeSupport(scheme);
-//            double lift = computeLift(scheme);
-//            double conf = computeConfidenceGivenFeature(scheme);
-//            double conf2 = computeConfidenceGivenSelection(scheme);
-//            if (support > supp_threshold && lift>lift_threshold && conf > confidence_threshold && conf2 > confidence_threshold) {
-//                drivingFeatures.add(new DrivingFeature(userDef1.getName(),userDef1.getType(),lift, support, conf, conf2));
-//            }
-//        }
-        
 //        getDataFeatureMat();
-        
 //        System.out.println("----------mRMR-----------");
 //        ArrayList<String> mRMR = minRedundancyMaxRelevance(40);
 //        for(String mrmr:mRMR){
 //            System.out.println(drivingFeatures.get(Integer.parseInt(mrmr)).getName());
 //        }
-
         return drivingFeatures;
     }
     
@@ -200,284 +184,175 @@ public class DrivingFeaturesGenerator {
         return instance;
     }
 
-//    public int[][] getDataFeatureMat(){
-//        
-//        int numData = random.size();
-//        int numFeature = drivingFeatures.size() + 1; // add class label as a last feature
-//        int[][] dataMat = new int[numData][numFeature];
-//        
-//        for(int i=0;i<numData;i++){
-//            int[][] d = randomData.get(i);
-//            Scheme s = new Scheme();
-//
-////            presetFilter(String filterName, int[][] data, ArrayList<String> params
-//            for(int j=0;j<numFeature-1;j++){
-//                DrivingFeature f = drivingFeatures.get(j);
-//                String name = f.getName();
-//                String type = f.getType();
-//                
-//                if(f.isPreset()){
-//                    String[] param_ = f.getParam();
-//                    ArrayList<String> param = new ArrayList<>();
-//                    param.addAll(Arrays.asList(param_));
-//                    if(s.presetFilter(type, d, param)){
-//                        dataMat[i][j]=1;
-//                    } else{
-//                        dataMat[i][j]=0;
-//                    }
-//                } else{
-//                    if(s.userDefFilter_eval(type, d)){
-//                        dataMat[i][j]=1;
-//                    } else{
-//                        dataMat[i][j]=0;
-//                    }
-//                }
-//            }
-//            
-//            boolean classLabel = false;
-//            for (int[][] compData : focusData) {
-//                boolean match = true;
-//                for(int k=0;k<d.length;k++){
-//                    for(int l=0;l<d[0].length;l++){
-//                        if(d[k][l]!=compData[k][l]){
-//                            match = false;
-//                            break;
-//                        }
-//                    }
-//                    if(match==false) break;
-//                }
-//                if(match==true){
-//                    classLabel = true;
-//                    break;
-//                }
-//            }
-//            if(classLabel==true){
-//                dataMat[i][numFeature-1]=1;
-//            } else{
-//                dataMat[i][numFeature-1]=0;
-//            }
-//        }
-//        dataFeatureMat = dataMat;
-//        return dataMat;
-//    }
-//    public ArrayList<String> minRedundancyMaxRelevance(int numSelectedFeatures){
-//        
-//        int[][] m = dataFeatureMat;
-//        int numFeatures = m[0].length;
-//        int numData = m.length;
-//        ArrayList<String> selected = new ArrayList<>();
-//        
-//        while(selected.size() < numSelectedFeatures){
-//            double phi = -10000;
-//            int save=0;
-//            for(int i=0;i<numFeatures-1;i++){
-//                if(selected.contains(""+i)){
-//                    continue;
-//                }
-//
-//                double D = getMutualInformation(i,numFeatures-1);
-//                double R = 0;
-//
-//                for (String selected1 : selected) {
-//                    R = R + getMutualInformation(i, Integer.parseInt(selected1));
-//                }
-//                if(!selected.isEmpty()){
-//                   R = (double) R/selected.size();
-//                }
-//                
-////                System.out.println(D-R);
-//                
-//                if(D-R > phi){
-//                    phi = D-R;
-//                    save = i;
-//                }
-//            }
-////            System.out.println(save);
-//            selected.add(""+save);
-//        }
-//        return selected;
-//    }  
-//    public double getMutualInformation(int feature1, int feature2){
-//        
-//        int[][] m = dataFeatureMat;
-//        int numFeatures = m[0].length;
-//        int numData = m.length;
-//        double I;
-//        
-//        int x1=0,x2=0;
-//        int x1x2=0,nx1x2=0,x1nx2=0,nx1nx2=0;      
-//
-//        for(int k=0;k<numData;k++){
-//            if(m[k][feature1]==1){ // x1==1
-//                x1++;
-//                if(m[k][feature2]==1){ // x2==1
-//                    x2++;
-//                    x1x2++;
-//                } else{ // x2!=1
-//                    x1nx2++;
-//                }
-//            } else{ // x1!=1
-//                if(m[k][feature2]==1){ // x2==1 
-//                    x2++;
-//                    nx1x2++;
-//                }else{ // x2!=1
-//                    nx1nx2++;
-//                }
-//            }
-//        }
-//        double p_x1 =(double) x1/numData;
-//        double p_nx1 = (double) 1-p_x1;
-//        double p_x2 = (double) x2/numData;
-//        double p_nx2 = (double) 1-p_x2;
-//        double p_x1x2 = (double) x1x2/numData;
-//        double p_nx1x2 = (double) nx1x2/numData;
-//        double p_x1nx2 = (double) x1nx2/numData;
-//        double p_nx1nx2 = (double) nx1nx2/numData;
-//        
-//        if(p_x1==0){p_x1 = 0.0001;}
-//        if(p_nx1==0){p_nx1=0.0001;}
-//        if(p_x2==0){p_x2=0.0001;}
-//        if(p_nx2==0){p_nx2=0.0001;}
-//        if(p_x1x2==0){p_x1x2=0.0001;}
-//        if(p_nx1x2==0){p_nx1x2=0.0001;}
-//        if(p_x1nx2==0){p_x1nx2=0.0001;}
-//        if(p_nx1nx2==0){p_nx1nx2=0.0001;}
-//        
-//        double i1 = p_x1x2*Math.log(p_x1x2/(p_x1*p_x2));
-//        double i2 = p_x1nx2*Math.log(p_x1nx2/(p_x1*p_nx2));
-//        double i3 = p_nx1x2*Math.log(p_nx1x2/(p_nx1*p_x2));
-//        double i4 = p_nx1nx2*Math.log(p_nx1nx2/(p_nx1*p_nx2));
-//
-//        I = i1 + i2 + i3 + i4;
-//        return I;
-//    }
+    public int[][] getDataFeatureMat(){
+        
+        int numData = random.size();
+        int numFeature = drivingFeatures.size() + 1; // add class label as a last feature
+        int[][] dataMat = new int[numData][numFeature];
+        Scheme s = new Scheme();
+        
+        for(int i=0;i<numData;i++){
+            Architecture a = random.get(i);
+            
+            for(int j=0;j<numFeature-1;j++){
+                DrivingFeature f = drivingFeatures.get(j);
+                String name = f.getName();
+                String expression = f.getExpression();
+                
+                s.setExpression(expression);
+                if(s.compare(a)==1){
+                    dataMat[i][j]=1;
+                } else{
+                    dataMat[i][j]=0;
+                }
+            }
+            
+            boolean foundMatch = false;
+            for (Architecture compArch:focus){
+                if (compareArchitectures(compArch, a)){
+                    foundMatch = true; 
+                    break;
+                }
+            }
+            if(foundMatch==false){
+                dataMat[i][numFeature-1]=0;
+            } else{
+                dataMat[i][numFeature-1]=1;
+            }
+        }
+        dataFeatureMat = dataMat;
+        return dataMat;
+    }
+  
     
-    
-//    public FastVector setDataFormat(){
-//        
-//            FastVector bool = new FastVector();
-//            bool.addElement("false");
-//            bool.addElement("true");
-//            FastVector attributes = new FastVector();
-//
-//            for(DrivingFeature df:drivingFeatures){
-//                String name = df.getName();
-//                attributes.addElement(new Attribute(name,bool));
-//            }
-//            
-//            FastVector bool2 = new FastVector();
-//            bool2.addElement("not selected");
-//            bool2.addElement("selected ");
-//            
-//            attributes.addElement(new Attribute("class",bool2));
-//            
-//            return attributes;
-//    }
-//    
-//    public Instances addData(Instances dataset){
-//        
-//        for(int i=0;i<randomData.size();i++){
-//            double[] values = new double[drivingFeatures.size()+1];
-//            for(int j=0;j<drivingFeatures.size()+1;j++){
-//                values[j] = (double) dataFeatureMat[i][j];
-//            }
-//            Instance thisInstance = new Instance(1.0,values);
-//            dataset.add(thisInstance);
-//        }
-//        return dataset;
-//    }
-//    
-//    
-//    public String buildTree() {
-//        
-//        String graph="";
-//        long t0 = System.currentTimeMillis();
-//        J48 tree = new J48();
-//        getDrivingFeatures();
-//        getDataFeatureMat();
-//        try{
-//            
-//            FastVector attributes = setDataFormat();
-//            Instances dataset = new Instances("Tree_dataset", attributes, 10000);
-//            dataset.setClassIndex(dataset.numAttributes()-1);
-//            dataset = addData(dataset);
-//            dataset.compactify();
-//
-////            // save as CSV
-////            CSVSaver saver = new CSVSaver();
-////            saver.setInstances(dataset);
-////            saver.setFile(new File(Params.path + "\\tmp_treeData.clp"));
-////            saver.writeBatch();
-//            
-//            System.out.println("numAttributes: " + dataset.numAttributes());
-//            System.out.println("num instances: " + dataset.numInstances());
-//            
-//            String [] options = new String[2];
-//            options[0] = "-C";
-//            options[1] = "0.05";
-//            tree.setOptions(options);
-//            
-//            Evaluation eval = new Evaluation(dataset);
-//            eval.crossValidateModel(tree, dataset, 10, new Random(1));
-//            tree.buildClassifier(dataset);
-//            
-//            System.out.println(eval.toSummaryString("\nResults\n\n", false));
-//            System.out.println(eval.toMatrixString());
-//            System.out.println(tree.toSummaryString());
-//            
-//            
-//            String summary = tree.toSummaryString();
-//            String evalSummary = eval.toSummaryString("\nResults\n\n", false);
-//            String confusion = eval.toMatrixString();
-//            graph = tree.graph();
-//            
-//
-//            
-////Number of leaves: 21
-////Size of the tree: 41
-////Results
-////Correctly Classified Instances        2550               97.3654 %
-////Incorrectly Classified Instances        69                2.6346 %
-////Kappa statistic                          0.9385
-////Mean absolute error                      0.0418
-////Root mean squared error                  0.1603
-////Relative absolute error                  9.6708 %
-////Root relative squared error             34.4579 %
-////Total Number of Instances             2619
-////=== Confusion Matrix ===
-////    a    b   <-- classified as
-//// 1771   19 |    a = false
-////   50  779 |    b = true
-//
-//            
-//            
-////            System.out.println(graph);
-//            
-////            TreeVisualizer tv = new TreeVisualizer(null, tree.graph(), new PlaceNode2());
-////            JFrame jf = new JFrame("Weka Classifier Tree Visualizer: J48");
-////            jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-////            jf.setSize(800, 600);
-////            jf.getContentPane().setLayout(new BorderLayout());
-////            jf.getContentPane().add(tv, BorderLayout.CENTER);
-////            jf.setVisible(true);
-////            // adjust tree
-////            tv.fitToScreen();
-//            
-//            long t1 = System.currentTimeMillis();
-//            System.out.println( "Tree building done in: " + String.valueOf(t1-t0) + " msec");
-//        } catch(Exception e){
-//            e.printStackTrace();
-//        }
-//        
-//        return graph;
-//    }
+    private boolean compareArchitectures(Architecture a1, Architecture a2){
+        ArrayList<String> inputs1 = a1.getInputs();
+        ArrayList<String> inputs2 = a2.getInputs();
+        ArrayList<String> outputs1 = a1.getOutputs();
+        ArrayList<String> outputs2 = a2.getOutputs();
+        if(inputs1.toString().contentEquals(inputs2.toString()) && outputs1.toString().contentEquals(outputs2.toString())){
+            return true;
+        }else{
+            return false;
+        }
+    }
     
 
+    public FastVector setDataFormat(){
+        
+            FastVector bool = new FastVector();
+            bool.addElement("false");
+            bool.addElement("true");
+            FastVector attributes = new FastVector();
+
+            for(DrivingFeature df:drivingFeatures){
+                String name = df.getName();
+                attributes.addElement(new Attribute(name,bool));
+            }
+            
+            FastVector bool2 = new FastVector();
+            bool2.addElement("not selected");
+            bool2.addElement("selected ");
+            
+            attributes.addElement(new Attribute("class",bool2));
+            return attributes;
+    }
     
-//    public void addUserDefFilter(String name, String expression){
-//        this.userDef.add(new DrivingFeature(name,expression));
-//    }
-    
+    public Instances addData(Instances dataset){
+        
+        for(int i=0;i<random.size();i++){
+            double[] values = new double[drivingFeatures.size()+1];
+            for(int j=0;j<drivingFeatures.size()+1;j++){
+                values[j] = (double) dataFeatureMat[i][j];
+            }
+            Instance thisInstance = new Instance(1.0,values);
+            dataset.add(thisInstance);
+        }
+        return dataset;
+    }
+//    
+//    
+    public String buildTree() {
+        
+        String graph="";
+        long t0 = System.currentTimeMillis();
+        J48 tree = new J48();
+        getDrivingFeatures();
+        getDataFeatureMat();
+        try{
+            
+            FastVector attributes = setDataFormat();
+            Instances dataset = new Instances("Tree_dataset", attributes, 10000);
+            dataset.setClassIndex(dataset.numAttributes()-1);
+            dataset = addData(dataset);
+            dataset.compactify();
+
+//            // save as CSV
+//            CSVSaver saver = new CSVSaver();
+//            saver.setInstances(dataset);
+//            saver.setFile(new File(Params.path + "\\tmp_treeData.clp"));
+//            saver.writeBatch();
+            
+            System.out.println("numAttributes: " + dataset.numAttributes());
+            System.out.println("num instances: " + dataset.numInstances());
+            
+            String [] options = new String[2];
+            options[0] = "-C";
+            options[1] = "0.05";
+            tree.setOptions(options);
+            
+            Evaluation eval = new Evaluation(dataset);
+            eval.crossValidateModel(tree, dataset, 10, new Random(1));
+            tree.buildClassifier(dataset);
+            
+            System.out.println(eval.toSummaryString("\nResults\n\n", false));
+            System.out.println(eval.toMatrixString());
+            System.out.println(tree.toSummaryString());
+            
+            
+            String summary = tree.toSummaryString();
+            String evalSummary = eval.toSummaryString("\nResults\n\n", false);
+            String confusion = eval.toMatrixString();
+            graph = tree.graph();
+
+//Number of leaves: 21
+//Size of the tree: 41
+//Results
+//Correctly Classified Instances        2550               97.3654 %
+//Incorrectly Classified Instances        69                2.6346 %
+//Kappa statistic                          0.9385
+//Mean absolute error                      0.0418
+//Root mean squared error                  0.1603
+//Relative absolute error                  9.6708 %
+//Root relative squared error             34.4579 %
+//Total Number of Instances             2619
+//=== Confusion Matrix ===
+//    a    b   <-- classified as
+// 1771   19 |    a = false
+//   50  779 |    b = true
+
+            
+            
+//            System.out.println(graph);
+            
+//            TreeVisualizer tv = new TreeVisualizer(null, tree.graph(), new PlaceNode2());
+//            JFrame jf = new JFrame("Weka Classifier Tree Visualizer: J48");
+//            jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//            jf.setSize(800, 600);
+//            jf.getContentPane().setLayout(new BorderLayout());
+//            jf.getContentPane().add(tv, BorderLayout.CENTER);
+//            jf.setVisible(true);
+//            // adjust tree
+//            tv.fitToScreen();
+            
+            long t1 = System.currentTimeMillis();
+            System.out.println( "Tree building done in: " + String.valueOf(t1-t0) + " msec");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        return graph;
+    }
     
 
 }

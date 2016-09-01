@@ -36,6 +36,7 @@ public class DrivingFeature{
         }
 
         public String getName(){return name;}
+        public String getExpression(){return expression;}
         public double getLift(){return lift;}
         public double getSupport(){return supp;}
         public double getConfidence(){return conf;}

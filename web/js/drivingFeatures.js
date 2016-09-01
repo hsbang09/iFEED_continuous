@@ -25,7 +25,7 @@ function getDrivingFeatures() {
     });
 
     $.ajax({
-        url: "drivingFeatureServlet",
+        url: "DataAnalysisServlet",
         type: "POST",
         data: {ID: "getDrivingFeatures", selected: JSON.stringify(highlightedArchs), unselected:JSON.stringify(unhighlightedArchs),
             supp:support_threshold,conf:confidence_threshold,lift:lift_threshold,

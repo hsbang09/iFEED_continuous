@@ -96,59 +96,17 @@ public class classificationTreeServlet extends HttpServlet {
         try {
             
         if (requestID.equalsIgnoreCase("initializeClassificationTree")){
-//            
-//            this.results = resultsGUIServlet.getInstance().getResults();
-//            
-//            double support_threshold = Double.parseDouble(request.getParameter("supp"));
-//            double confidence_threshold = Double.parseDouble(request.getParameter("conf"));
-//            double lift_threshold = Double.parseDouble(request.getParameter("lift")); 
-//             
-//            String bitStrings_raw = request.getParameter("bitStrings");
-//            bitStrings_raw = bitStrings_raw.substring(1, bitStrings_raw.length()-1);
-//          
-//            String[] bitStrings_split = bitStrings_raw.split(",");
-//            
-//            ArrayList<String> bitStrings = new ArrayList<>();
-//            int norb = Params.orbit_list.length;
-//            int ninstr = Params.instrument_list.length;
-//
-//            for (String bitStrings_split1 : bitStrings_split) {
-//                String bitString = bitStrings_split1.substring(1, bitStrings_split1.length() - 1);
-//                bitStrings.add(bitString);
-//                if(bitString.length()!=60){
-//                    System.out.println("something's wrong: bitString length not 60");
-//                }
-//            }
-//            
-//            ArrayList<int[][]> selected_pop = new ArrayList<>();
-//            ArrayList<int[][]> pop = new ArrayList<>();
-//            
-//            for(Result result1:results){
-//                pop.add(boolArray2IntMat(result1.getArch().getBitString()));
-//            }
-//            for(String thisBitString:bitStrings){
-//                selected_pop.add(bitString2IntMat(thisBitString));
-//            }
-            
-//            dfsGen = DrivingFeaturesGenerator.getInstance();
-//            dfsGen.initialize2(selected_pop, pop, support_threshold,confidence_threshold,lift_threshold);
-            
+
         } else if(requestID.equalsIgnoreCase("addUserDefFeatures")){
-//            
-//            String names_input = request.getParameter("name");
-//            String expressions_input = request.getParameter("expression");
-//            
-//            dfsGen.addUserDefFilter(names_input,expressions_input);
-            
+
         }else if (requestID.equalsIgnoreCase("buildClassificationTree")){
 //            String graph = dfsGen.buildTree();
 //            TreeNode root = parse_decisionTree(graph);
 //            outputString = gson.toJson(root);
 //            System.out.println(outputString);
+            
         } else if(requestID.equalsIgnoreCase("getTreeSummary")){
             
-
-
 
 //            output = treeSummary + "\n==========\n" +
 //                    evalSummary + "\n==========\n" + 

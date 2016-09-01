@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
     <servlet>
-        <servlet-name>jessCommandServlet</servlet-name>
-        <servlet-class>webinterfaces.jessCommandServlet</servlet-class>
+        <servlet-name>DataAnalysisServlet</servlet-name>
+        <servlet-class>webinterfaces.DataAnalysisServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>dataFileServlet</servlet-name>
-        <servlet-class>webinterfaces.dataFileServlet</servlet-class>
+        <servlet-name>DataFileServlet</servlet-name>
+        <servlet-class>webinterfaces.DataFileServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>jessCommandServlet</servlet-name>
-        <url-pattern>/jessCommandServlet</url-pattern>
+        <servlet-name>DataAnalysisServlet</servlet-name>
+        <url-pattern>/DataAnalysisServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>dataFileServlet</servlet-name>
-        <url-pattern>/dataFileServlet</url-pattern>
+        <servlet-name>DataFileServlet</servlet-name>
+        <url-pattern>/DataFileServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

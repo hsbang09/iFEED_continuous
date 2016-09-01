@@ -23,8 +23,8 @@ import java.util.Stack;
  *
  * @author Bang
  */
-@WebServlet(name = "drivingFeatureServlet", urlPatterns = {"/drivingFeatureServlet"})
-public class drivingFeatureServlet extends HttpServlet {
+@WebServlet(name = "DataAnalysisServlet", urlPatterns = {"/DataAnalysisServlet"})
+public class DataAnalysisServlet extends HttpServlet {
 
     
     private Gson gson = new Gson();
@@ -52,10 +52,10 @@ public class drivingFeatureServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet drivingFeatureServlet</title>");            
+            out.println("<title>Servlet DataAnalysisServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet drivingFeatureServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet DataAnalysisServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -301,19 +301,138 @@ public class drivingFeatureServlet extends HttpServlet {
                         } 
                 }
             }
-
             String jsonObj = gson.toJson(sortedDFs);
             outputString = jsonObj;
-            System.out.println(outputString);
         } 
+        else if(requestID.equalsIgnoreCase("buildClassificationTree")){
+            
+            double support_threshold = Double.parseDouble(request.getParameter("supp"));
+            double confidence_threshold = Double.parseDouble(request.getParameter("conf"));
+            double lift_threshold = Double.parseDouble(request.getParameter("lift")); 
+             
+            ArrayList<Architecture> all = new ArrayList<>();
+            ArrayList<Architecture> selected = new ArrayList<>();
+            
+            String unselected_raw = request.getParameter("unselected");
+            String selected_raw = request.getParameter("selected");
+            
+            unselected_raw = unselected_raw.substring(2,unselected_raw.length()-2);
+            selected_raw = selected_raw.substring(2,selected_raw.length()-2);
+//       {"inputs":["1","1","500","51","6","25"],"objectives":["121.344","117.97","66.646","66.685","1000","39.072","125.173","123.704","70.096","70.096","168","44.647"]},
+//       {"inputs":["1","1","500","51","22.5","25"],"objectives":["111.311","107.032","45.023","45.801","1000","44.589","119.654","114.799","66.415","67.727","168","62.426"]},
+//       {"inputs":["1","1","500","51","13.5","25"],"objectives":["116.933","110.228","66.05","66.193","1000","143.498","123.477","120.659","70.096","70.096","168","143.937"]}
+            
+            
+            ArrayList<String> inputs;
+            ArrayList<String> outputs;
+            ArrayList<String> inputNames;
+            ArrayList<String> outputNames;
 
-//        else if(requestID.equalsIgnoreCase("addUserDefFeatures")){
-//            
-//            String names_input = request.getParameter("name");
-//            String expressions_input = request.getParameter("expression");
-//          
-//            dfsGen.addUserDefFilter(names_input,expressions_input);
-//        }
+            while(true){
+                if(!unselected_raw.contains("[")){
+                    break;
+                }
+                inputs = new ArrayList<>();
+                outputs = new ArrayList<>();
+                inputNames = new ArrayList<>();
+                outputNames = new ArrayList<>();
+                
+                for (int j=0;j<4;j++){
+                    int start = unselected_raw.indexOf("[");
+                    int end = unselected_raw.indexOf("]");
+                    String inside = unselected_raw.substring(start+1,end);
+                    String[] inside_split = inside.split(",");
+                    for(int i=0;i<inside_split.length;i++){
+                        String num = inside_split[i];
+                        num = num.substring(1,num.length()-1);
+                        if(j==0){
+                            inputs.add(num);
+                        }else if(j==1){
+                            outputs.add(num);
+                        }else if(j==2){
+                            inputNames.add(num);
+                        }else if(j==3){
+                            outputNames.add(num);
+                        }
+                    }
+                    unselected_raw = unselected_raw.substring(end+1);
+                }
+
+                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
+            }
+
+            while(true){
+                if(!selected_raw.contains("[")){
+                    break;
+                }
+                inputs = new ArrayList<>();
+                outputs = new ArrayList<>();
+                inputNames = new ArrayList<>();
+                outputNames = new ArrayList<>();
+                
+                for (int j=0;j<4;j++){
+                    int start = selected_raw.indexOf("[");
+                    int end = selected_raw.indexOf("]");
+                    String inside = selected_raw.substring(start+1,end);
+                    String[] inside_split = inside.split(",");
+                    for(int i=0;i<inside_split.length;i++){
+                        String num = inside_split[i];
+                        num = num.substring(1,num.length()-1);
+                        if(j==0){
+                            inputs.add(num);
+                        }else if(j==1){
+                            outputs.add(num);
+                        }else if(j==2){
+                            inputNames.add(num);
+                        }else if(j==3){
+                            outputNames.add(num);
+                        }
+                    }
+                    selected_raw = selected_raw.substring(end+1);
+                }
+                
+                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
+                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
+            }
+            
+            
+            String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
+            String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
+            
+//              ["NSAT-exact:5","NSAT-exact:4","NSAT-min:1-max:3"]
+            
+            candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
+            candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
+            String[] candidate_split = candidate_raw.split(",");
+            String[] candidate_names_split = candidate_names_raw.split(",");
+            
+            ArrayList<String> candidates = new ArrayList<>();
+            ArrayList<String> candidates_names = new ArrayList<>();
+            
+            for(int i=0;i<candidate_split.length;i++){
+                String cand_tmp = candidate_split[i];
+                cand_tmp = cand_tmp.substring(1,cand_tmp.length()-1);
+                candidates.add(cand_tmp);
+                
+                String cand_name_tmp = candidate_names_split[i];
+                cand_name_tmp = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
+                candidates_names.add(cand_name_tmp);
+                
+
+            }
+            
+            System.out.println("selectedLength: " + selected.size());
+            System.out.println("allLength: " + all.size());
+            
+            dfsGen.initialize(selected, all, support_threshold,confidence_threshold,lift_threshold);
+            dfsGen.setCandidateFeatures(candidates,candidates_names);
+
+            String graph = dfsGen.buildTree();
+            TreeNode root = parse_decisionTree(graph);
+            outputString = gson.toJson(root);
+//            System.out.println(outputString);
+        } 
+        
         }
         catch(Exception e){ e.printStackTrace();}
         
@@ -324,7 +443,100 @@ public class drivingFeatureServlet extends HttpServlet {
         
     }
 
-
+    public TreeNode parse_decisionTree(String graph){
+        
+//        String g = graph.substring(graph.indexOf("{")+2 , graph.indexOf("}")-1);
+        String g = graph;
+        ArrayList<String> existingNodes = new ArrayList<>();
+//        ArrayList<ArrayList<String>> branches;
+        TreeNode root = new TreeNode();
+        while(g.length()!=0){
+            if(!g.contains("\n")){
+                break;
+            }
+            String line = g.substring(0, g.indexOf("\n"));
+            String rest = g.substring(g.indexOf("\n")+1);
+            if(!line.contains("[")){
+                g = rest;
+                continue;
+            }
+            String id;
+            if(!line.contains("->")){ // node
+                id = line.substring(line.indexOf("N")+1,line.indexOf("[")-1);
+                if(id.equalsIgnoreCase("0")){
+                    root = new TreeNode("0");
+//                    String name = line.substring(line.indexOf("[")+1,line.indexOf("]",line.length()-1));
+                    String tmp;
+                    String name;
+                    if(line.contains("'")){
+                        tmp = line.substring(line.indexOf("\"")+2);
+                        name = tmp.substring(0,tmp.indexOf("\"")-1);
+                    } else{
+                        tmp = line.substring(line.indexOf("\"")+1);
+                        name = tmp.substring(0,tmp.indexOf("\""));
+                    }
+                    root.setName(name);
+                    existingNodes.add(id);
+                }else{
+                    if(existingNodes.contains(id)){
+                        TreeNode thisNode = root.findDescendent(root,id);
+                        String tmp;
+                        String name;
+                        if(line.contains("'")){
+                            tmp = line.substring(line.indexOf("\"")+2);
+                            name = tmp.substring(0,tmp.indexOf("\"")-1);
+                        } else{
+                            tmp = line.substring(line.indexOf("\"")+1);
+                            name = tmp.substring(0,tmp.indexOf("\""));
+                        }
+                        
+                        if(name.contains("selected")){
+//                            System.out.println(name);
+                            String insideParen = name.substring(name.indexOf("(")+1,name.indexOf(")"));
+                            double weight;
+                            double incorrect=0.0;
+                            if(insideParen.indexOf("/")==-1){
+                                weight = Double.parseDouble(insideParen);
+                            } else{
+                                weight = Double.parseDouble(insideParen.substring(0,insideParen.indexOf("/")));
+                                incorrect = Double.parseDouble(insideParen.substring(insideParen.indexOf("/")+1));
+                            }
+                            name = name.substring(0,name.indexOf("(")-1);
+                            thisNode.setWeight((int) weight);
+                            if(!name.contains("not")){ // selected
+                                thisNode.setClassifiedAsSelected((int) (weight-incorrect));
+                            } else{    // not selected
+                                thisNode.setClassifiedAsSelected((int) incorrect);
+                            }
+                        }
+                        thisNode.setName(name);
+                    } else{
+                        System.out.println("sth went wrong");
+                    }
+                }
+            }
+            else{ // link
+                String ids = line.substring(0,line.indexOf("[")-1);
+                id = ids.substring(ids.indexOf("N")+1,ids.indexOf("->"));
+                String newid = ids.substring(ids.indexOf("->")+3);
+                TreeNode thisNode = root.findDescendent(root, id);
+                TreeNode newNode = new TreeNode(newid);
+                if(line.contains("true")){
+                    newNode.setCond(true);
+                }else if(line.contains("false")){
+                    newNode.setCond(false);
+                }else {
+                    System.out.println("link without condition");
+                }
+                thisNode.addChild(newNode);
+                existingNodes.add(newid);
+            }
+            g = rest;
+        }
+        root.updateAllClassifiedAsSelected(root);
+        root.updateAllWeights(root);
+        return root;
+    }
     /**
      * Returns a short description of the servlet.
      *

@@ -27,16 +27,12 @@ import jxl.Workbook;
  *
  * @author Bang
  */
-@WebServlet(name = "dataFileServlet", urlPatterns = {"/dataFileServlet"})
-public class dataFileServlet extends HttpServlet {
+@WebServlet(name = "DataFileServlet", urlPatterns = {"/DataFileServlet"})
+public class DataFileServlet extends HttpServlet {
     
     private Gson gson = new Gson();
-    private static dataFileServlet instance=null;
-    
-//    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\DEMS_dataset.xls";
-//    private String path = "C:\\Users\\Bang\\Documents\\iFEED_continuous\\results\\astrodynamic_simulation_result_inc_modified2.xls";
-//    private int nInputs = 7;
-//    private int nOutputs = 8;
+    private static DataFileServlet instance=null;
+   
     /**
      *
      * @throws ServletException
@@ -62,10 +58,10 @@ public class dataFileServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet dataFileServlet</title>");            
+            out.println("<title>Servlet DataFileServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet dataFileServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet DataFileServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -161,11 +157,11 @@ public class dataFileServlet extends HttpServlet {
     
 
     
-    public static dataFileServlet getInstance()
+    public static DataFileServlet getInstance()
     {
         if( instance == null ) 
         {
-            instance = new dataFileServlet();
+            instance = new DataFileServlet();
         }
         return instance;
     }
