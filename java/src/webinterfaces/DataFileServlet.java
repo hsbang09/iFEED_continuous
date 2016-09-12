@@ -142,6 +142,7 @@ public class DataFileServlet extends HttpServlet {
                 String jsonObj = gson.toJson(results);
                 outputString = jsonObj;
 
+                DataManagement dm = new DataManagement();
             }
 
         } catch(Exception e){
