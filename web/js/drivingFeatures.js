@@ -16,12 +16,12 @@ function getDrivingFeatures() {
     var unhighlightedArchs = [];
     var highlightedArchs = [];
     
-//   d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){console.log(d.__data__);})
+    
     d3.selectAll("[class=dot]")[0].forEach(function(d){
-        unhighlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
+        unhighlightedArchs.push(d.__data__.id);
     });
     d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
-        highlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
+        highlightedArchs.push(d.__data__.id);
     });
 
     $.ajax({
@@ -85,8 +85,8 @@ function display_filter_option(){
    
     for (var i=0;i<inputNames.length;i++){
         var varName = inputNames[i];
-        var minVal = get_min_value(varName,jsonObj_scatterPlot);
-        var maxVal = get_max_value(varName,jsonObj_scatterPlot);
+        var minVal = get_min_value(varName,jsonObj_scatterPlot.data);
+        var maxVal = get_max_value(varName,jsonObj_scatterPlot.data);
         
         var slider_div = filterOptions_inputs.append("div")
                 .attr("id",function(){
@@ -273,12 +273,12 @@ function applyFilter_add(){
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
 
 function generatePresetCandidateDF(){
-    var inputs = jsonObj_scatterPlot[0].inputNames;
+    var inputs = inputNames;
     var input_max = [];
     var input_min = [];
     for(var i=0;i<inputs.length;i++){
-        input_max.push(get_max_value(inputs[i],jsonObj_scatterPlot))
-        input_min.push(get_min_value(inputs[i],jsonObj_scatterPlot))
+        input_max.push(get_max_value(inputs[i],jsonObj_scatterPlot.data))
+        input_min.push(get_min_value(inputs[i],jsonObj_scatterPlot.data))
     }
     
     for (var i=0;i<inputs.length;i++){

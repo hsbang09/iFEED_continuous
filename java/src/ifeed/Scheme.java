@@ -38,7 +38,7 @@ public class Scheme {
             
             String type = thisExp.split("-")[0];  
             int type_int=-1;
-            type_int = a.getInputNames().indexOf(type);
+//            type_int = a.getInputNames().indexOf(type);
 
             double exact=-9999, min=-9999, max=-9999;
             for(int j=0;j<thisExp.split("-").length-1;j++){

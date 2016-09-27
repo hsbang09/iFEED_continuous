@@ -305,14 +305,14 @@ function import_data(){
                 },
                 complete: function () {
                     
-                    
-                    
-                    nInputs = jsonObj_scatterPlot[0].inputs.length;
-                    nOutputs = jsonObj_scatterPlot[0].outputs.length;
+                    inputNames = jsonObj_scatterPlot.metadata.inputNames;
+                    outputNames = jsonObj_scatterPlot.metadata.outputNames;
+                    nInputs = inputNames.length;
+                    nOutputs = outputNames.length;
 
                     d3.select("[id=axisOptions_x]").selectAll("option").remove();
                     d3.select("[id=axisOptions_y]").selectAll("option").remove();
-                    presetGenerated = false
+                    presetGenerated = false;
                     translate_tmp = [0,0];
                     scale_tmp = 0;
                     translate_tmp_local = [0,0];
@@ -340,7 +340,7 @@ function import_data(){
                             .text(function(d){return d});
 
                     reset_drawing_scatterPlot();
-                    draw_scatterPlot(jsonObj_scatterPlot);
+                    draw_scatterPlot(jsonObj_scatterPlot.data);
                     d3.select("[id=basicInfoBox_div]").select("g").remove();
                 },
                 error: function (jqXHR, textStatus, errorThrown)

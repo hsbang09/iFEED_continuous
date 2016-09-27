@@ -34,6 +34,7 @@ public class DataAnalysisServlet extends HttpServlet {
     DrivingFeaturesGenerator dfsGen;
     ArrayList<DrivingFeature> DFs;
     ArrayList<DrivingFeature> sortedDFs;
+    DataManagement dm;
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -93,6 +94,7 @@ public class DataAnalysisServlet extends HttpServlet {
         if (init==false){
             init=true;
             dfsGen = DrivingFeaturesGenerator.getInstance();
+            dm = DataManagement.getInstance();
         }
         
         String outputString="";
@@ -100,12 +102,7 @@ public class DataAnalysisServlet extends HttpServlet {
         try {
             
 
-//       "[{"inputs":["1","1","500","51","6","25"],"objectives":["121.344","117.97","66.646","66.685","1000","39.072","125.173","123.704","70.096","70.096","168","44.647"]},"
-//       + "{"inputs":["1","1","500","51","22.5","25"],"objectives":["111.311","107.032","45.023","45.801","1000","44.589","119.654","114.799","66.415","67.727","168","62.426"]},"
-//       + "{"inputs":["1","1","500","51","13.5","25"],"objectives":["116.933","110.228","66.05","66.193","1000","143.498","123.477","120.659","70.096","70.096","168","143.937"]}]"
-            
-            
-        
+
         if(requestID.equalsIgnoreCase("getDrivingFeatures")){
             
             double support_threshold = Double.parseDouble(request.getParameter("supp"));
@@ -118,191 +115,175 @@ public class DataAnalysisServlet extends HttpServlet {
             String unselected_raw = request.getParameter("unselected");
             String selected_raw = request.getParameter("selected");
             
-            unselected_raw = unselected_raw.substring(2,unselected_raw.length()-2);
-            selected_raw = selected_raw.substring(2,selected_raw.length()-2);
-//       {"inputs":["1","1","500","51","6","25"],"objectives":["121.344","117.97","66.646","66.685","1000","39.072","125.173","123.704","70.096","70.096","168","44.647"]},
-//       {"inputs":["1","1","500","51","22.5","25"],"objectives":["111.311","107.032","45.023","45.801","1000","44.589","119.654","114.799","66.415","67.727","168","62.426"]},
-//       {"inputs":["1","1","500","51","13.5","25"],"objectives":["116.933","110.228","66.05","66.193","1000","143.498","123.477","120.659","70.096","70.096","168","143.937"]}
-            
-            
-            ArrayList<String> inputs;
-            ArrayList<String> outputs;
-            ArrayList<String> inputNames;
-            ArrayList<String> outputNames;
+            unselected_raw = unselected_raw.substring(1,unselected_raw.length()-1);
+            selected_raw = selected_raw.substring(1,selected_raw.length()-1);
 
-            while(true){
-                if(!unselected_raw.contains("[")){
+            
+            while(true){ // Iterate over unselected data
+                ArrayList<String> inputs = new ArrayList<>();
+                ArrayList<String> outputs = new ArrayList<>();
+                boolean last=false;
+                
+                int comma = unselected_raw.indexOf(",");
+                if(comma==-1){
+                    last=true;
+                    comma=unselected_raw.length()-1;
+                }
+                
+                String id_string = unselected_raw.substring(0,comma);
+                int data_id = Integer.parseInt(id_string);
+//                all.add(new Architecture(id,inputs, outputs));
+                
+                dm.queryArchitecture(data_id);
+                last=true;
+                
+                if (last){
                     break;
+                }else{
+                    unselected_raw = unselected_raw.substring(comma+1);
                 }
-                inputs = new ArrayList<>();
-                outputs = new ArrayList<>();
-                inputNames = new ArrayList<>();
-                outputNames = new ArrayList<>();
-                
-                for (int j=0;j<4;j++){
-                    int start = unselected_raw.indexOf("[");
-                    int end = unselected_raw.indexOf("]");
-                    String inside = unselected_raw.substring(start+1,end);
-                    String[] inside_split = inside.split(",");
-                    for(int i=0;i<inside_split.length;i++){
-                        String num = inside_split[i];
-                        num = num.substring(1,num.length()-1);
-                        if(j==0){
-                            inputs.add(num);
-                        }else if(j==1){
-                            outputs.add(num);
-                        }else if(j==2){
-                            inputNames.add(num);
-                        }else if(j==3){
-                            outputNames.add(num);
-                        }
-                    }
-                    unselected_raw = unselected_raw.substring(end+1);
-                }
-
-                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
             }
 
-            while(true){
-                if(!selected_raw.contains("[")){
-                    break;
-                }
-                inputs = new ArrayList<>();
-                outputs = new ArrayList<>();
-                inputNames = new ArrayList<>();
-                outputNames = new ArrayList<>();
-                
-                for (int j=0;j<4;j++){
-                    int start = selected_raw.indexOf("[");
-                    int end = selected_raw.indexOf("]");
-                    String inside = selected_raw.substring(start+1,end);
-                    String[] inside_split = inside.split(",");
-                    for(int i=0;i<inside_split.length;i++){
-                        String num = inside_split[i];
-                        num = num.substring(1,num.length()-1);
-                        if(j==0){
-                            inputs.add(num);
-                        }else if(j==1){
-                            outputs.add(num);
-                        }else if(j==2){
-                            inputNames.add(num);
-                        }else if(j==3){
-                            outputNames.add(num);
-                        }
-                    }
-                    selected_raw = selected_raw.substring(end+1);
-                }
-                
-                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
-                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
-            }
+//            while(true){
+//                if(!selected_raw.contains("[")){
+//                    break;
+//                }
+//                inputs = new ArrayList<>();
+//                outputs = new ArrayList<>();
+//                inputNames = new ArrayList<>();
+//                outputNames = new ArrayList<>();
+//                
+//                for (int j=0;j<4;j++){
+//                    int start = selected_raw.indexOf("[");
+//                    int end = selected_raw.indexOf("]");
+//                    String inside = selected_raw.substring(start+1,end);
+//                    String[] inside_split = inside.split(",");
+//                    for(int i=0;i<inside_split.length;i++){
+//                        String num = inside_split[i];
+//                        num = num.substring(1,num.length()-1);
+//                        if(j==0){
+//                            inputs.add(num);
+//                        }else if(j==1){
+//                            outputs.add(num);
+//                        }else if(j==2){
+//                            inputNames.add(num);
+//                        }else if(j==3){
+//                            outputNames.add(num);
+//                        }
+//                    }
+//                    selected_raw = selected_raw.substring(end+1);
+//                }
+//                
+////                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
+////                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
+//            }
             
             
-            String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
-            String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
-            
-//              ["NSAT-exact:5","NSAT-exact:4","NSAT-min:1-max:3"]
-            
-            candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
-            candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
-            String[] candidate_split = candidate_raw.split(",");
-            String[] candidate_names_split = candidate_names_raw.split(",");
-            
-            ArrayList<String> candidates = new ArrayList<>();
-            ArrayList<String> candidates_names = new ArrayList<>();
-            
-            for(int i=0;i<candidate_split.length;i++){
-                String cand_tmp = candidate_split[i];
-                cand_tmp = cand_tmp.substring(1,cand_tmp.length()-1);
-                candidates.add(cand_tmp);
-                
-                String cand_name_tmp = candidate_names_split[i];
-                cand_name_tmp = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
-                candidates_names.add(cand_name_tmp);
-                
-                System.out.println(cand_tmp);
-            }
-            
-            System.out.println("selectedLength: " + selected.size());
-            System.out.println("allLength: " + all.size());
-            
-            dfsGen.initialize(selected, all, support_threshold,confidence_threshold,lift_threshold);
-            dfsGen.setCandidateFeatures(candidates,candidates_names);
-            
-            DFs = dfsGen.getDrivingFeatures();
-         
-//            String sortingCriteria = request.getParameter("criteria");
-            String sortingCriteria = "lift";
-            
-            sortedDFs = new ArrayList<>();
-            for (DrivingFeature df:DFs){
-            
-                double value = 0.0;
-                double maxVal = 1000000.0;
-                double minVal = -1.0;
-                
-                if (sortedDFs.isEmpty()){
-                    sortedDFs.add(df);
-                    continue;
-                } 
-                
-                if(sortingCriteria.equalsIgnoreCase("lift")){
-                    value = df.getLift();
-                    maxVal = sortedDFs.get(0).getLift();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getLift();
-                } else if(sortingCriteria.equalsIgnoreCase("supp")){
-                    value = df.getSupport();
-                    maxVal = sortedDFs.get(0).getSupport();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getSupport();
-                } else if(sortingCriteria.equalsIgnoreCase("confave")){
-                    value = (double) (df.getConfidence() + df.getConfidence2())/2;
-                    maxVal = (double) (sortedDFs.get(0).getConfidence() + sortedDFs.get(0).getConfidence2())/2;
-                    minVal = (double) (sortedDFs.get(sortedDFs.size()-1).getConfidence() + sortedDFs.get(sortedDFs.size()-1).getConfidence2())/2;
-                } else if(sortingCriteria.equalsIgnoreCase("conf1")){
-                    value = df.getConfidence();
-                    maxVal = sortedDFs.get(0).getConfidence();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence();
-                } else if(sortingCriteria.equalsIgnoreCase("conf2")){
-                    value = df.getConfidence2();
-                    maxVal = sortedDFs.get(0).getConfidence2();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence2();
-                }
-                
-                if (value >= maxVal){
-                    sortedDFs.add(0,df);
-                } else if(value <= minVal){
-                    sortedDFs.add(df);
-                } else {
-                        for (int j=0;j<sortedDFs.size();j++){
-                            
-                            double refval = 0.0;
-                            double refval2 = 0.0;
-                            if(sortingCriteria.equalsIgnoreCase("lift")){
-                                refval = sortedDFs.get(j).getLift();
-                                refval2 = sortedDFs.get(j+1).getLift();
-                            } else if(sortingCriteria.equalsIgnoreCase("supp")){
-                                refval = sortedDFs.get(j).getSupport();
-                                refval2 = sortedDFs.get(j+1).getSupport();
-                            } else if(sortingCriteria.equalsIgnoreCase("confave")){
-                                refval = (double) (sortedDFs.get(j).getConfidence() + sortedDFs.get(j).getConfidence2())/2;
-                                refval2 = (double) (sortedDFs.get(j+1).getConfidence() + sortedDFs.get(j+1).getConfidence2())/2;
-                            } else if(sortingCriteria.equalsIgnoreCase("conf1")){
-                                refval = sortedDFs.get(j).getConfidence();
-                                refval2 = sortedDFs.get(j+1).getConfidence();
-                            } else if(sortingCriteria.equalsIgnoreCase("conf2")){
-                                refval = sortedDFs.get(j).getConfidence2();
-                                refval2 = sortedDFs.get(j+1).getConfidence2();
-                            }
-                            
-                            if(value <= refval && value > refval2){
-                                sortedDFs.add(j+1,df);
-                                break;
-                            }
-                        } 
-                }
-            }
-            String jsonObj = gson.toJson(sortedDFs);
-            outputString = jsonObj;
+//            String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
+//            String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
+//            
+////              ["NSAT-exact:5","NSAT-exact:4","NSAT-min:1-max:3"]
+//            
+//            candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
+//            candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
+//            String[] candidate_split = candidate_raw.split(",");
+//            String[] candidate_names_split = candidate_names_raw.split(",");
+//            
+//            ArrayList<String> candidates = new ArrayList<>();
+//            ArrayList<String> candidates_names = new ArrayList<>();
+//            
+//            for(int i=0;i<candidate_split.length;i++){
+//                String cand_tmp = candidate_split[i];
+//                cand_tmp = cand_tmp.substring(1,cand_tmp.length()-1);
+//                candidates.add(cand_tmp);
+//                
+//                String cand_name_tmp = candidate_names_split[i];
+//                cand_name_tmp = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
+//                candidates_names.add(cand_name_tmp);
+//                
+//                System.out.println(cand_tmp);
+//            }
+//            
+//            System.out.println("selectedLength: " + selected.size());
+//            System.out.println("allLength: " + all.size());
+//            
+//            dfsGen.initialize(selected, all, support_threshold,confidence_threshold,lift_threshold);
+//            dfsGen.setCandidateFeatures(candidates,candidates_names);
+//            
+//            DFs = dfsGen.getDrivingFeatures();
+//         
+////            String sortingCriteria = request.getParameter("criteria");
+//            String sortingCriteria = "lift";
+//            
+//            sortedDFs = new ArrayList<>();
+//            for (DrivingFeature df:DFs){
+//            
+//                double value = 0.0;
+//                double maxVal = 1000000.0;
+//                double minVal = -1.0;
+//                
+//                if (sortedDFs.isEmpty()){
+//                    sortedDFs.add(df);
+//                    continue;
+//                } 
+//                
+//                if(sortingCriteria.equalsIgnoreCase("lift")){
+//                    value = df.getLift();
+//                    maxVal = sortedDFs.get(0).getLift();
+//                    minVal = sortedDFs.get(sortedDFs.size()-1).getLift();
+//                } else if(sortingCriteria.equalsIgnoreCase("supp")){
+//                    value = df.getSupport();
+//                    maxVal = sortedDFs.get(0).getSupport();
+//                    minVal = sortedDFs.get(sortedDFs.size()-1).getSupport();
+//                } else if(sortingCriteria.equalsIgnoreCase("confave")){
+//                    value = (double) (df.getConfidence() + df.getConfidence2())/2;
+//                    maxVal = (double) (sortedDFs.get(0).getConfidence() + sortedDFs.get(0).getConfidence2())/2;
+//                    minVal = (double) (sortedDFs.get(sortedDFs.size()-1).getConfidence() + sortedDFs.get(sortedDFs.size()-1).getConfidence2())/2;
+//                } else if(sortingCriteria.equalsIgnoreCase("conf1")){
+//                    value = df.getConfidence();
+//                    maxVal = sortedDFs.get(0).getConfidence();
+//                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence();
+//                } else if(sortingCriteria.equalsIgnoreCase("conf2")){
+//                    value = df.getConfidence2();
+//                    maxVal = sortedDFs.get(0).getConfidence2();
+//                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence2();
+//                }
+//                
+//                if (value >= maxVal){
+//                    sortedDFs.add(0,df);
+//                } else if(value <= minVal){
+//                    sortedDFs.add(df);
+//                } else {
+//                        for (int j=0;j<sortedDFs.size();j++){
+//                            
+//                            double refval = 0.0;
+//                            double refval2 = 0.0;
+//                            if(sortingCriteria.equalsIgnoreCase("lift")){
+//                                refval = sortedDFs.get(j).getLift();
+//                                refval2 = sortedDFs.get(j+1).getLift();
+//                            } else if(sortingCriteria.equalsIgnoreCase("supp")){
+//                                refval = sortedDFs.get(j).getSupport();
+//                                refval2 = sortedDFs.get(j+1).getSupport();
+//                            } else if(sortingCriteria.equalsIgnoreCase("confave")){
+//                                refval = (double) (sortedDFs.get(j).getConfidence() + sortedDFs.get(j).getConfidence2())/2;
+//                                refval2 = (double) (sortedDFs.get(j+1).getConfidence() + sortedDFs.get(j+1).getConfidence2())/2;
+//                            } else if(sortingCriteria.equalsIgnoreCase("conf1")){
+//                                refval = sortedDFs.get(j).getConfidence();
+//                                refval2 = sortedDFs.get(j+1).getConfidence();
+//                            } else if(sortingCriteria.equalsIgnoreCase("conf2")){
+//                                refval = sortedDFs.get(j).getConfidence2();
+//                                refval2 = sortedDFs.get(j+1).getConfidence2();
+//                            }
+//                            
+//                            if(value <= refval && value > refval2){
+//                                sortedDFs.add(j+1,df);
+//                                break;
+//                            }
+//                        } 
+//                }
+//            }
+//            String jsonObj = gson.toJson(sortedDFs);
+//            outputString = jsonObj;
         } 
         else if(requestID.equalsIgnoreCase("buildClassificationTree")){
             
@@ -358,7 +339,7 @@ public class DataAnalysisServlet extends HttpServlet {
                     unselected_raw = unselected_raw.substring(end+1);
                 }
 
-                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
+//                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
             }
 
             while(true){
@@ -391,8 +372,8 @@ public class DataAnalysisServlet extends HttpServlet {
                     selected_raw = selected_raw.substring(end+1);
                 }
                 
-                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
-                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
+//                selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
+//                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
             }
             
             
