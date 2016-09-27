@@ -5,12 +5,22 @@
  */
 package ifeed;
 
-//import hdf.hdf5lib.*;
-//import hdf.hdf5lib.HDF5Constants;
-//import org.slf4j.*;
-
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.DB;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import com.mongodb.client.FindIterable;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Locale;
+
+import static java.util.Arrays.asList;
+
 
 /**
  *
@@ -18,50 +28,36 @@ import com.mongodb.DB;
  */
 public class DataManagement {
     
+    MongoClient mongoClient;
+    MongoDatabase db;
+    String dbName = "ifeed";
+    String collectionName = "testcollection1";
     
     public DataManagement(){
                 
         try{            
-            
-            
-            
-            MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
-            
-            DB db = mongoClient.getDB( "test" );
-            
-            
-            
-        //////////////////////////////////////////////////////////// HDF test code
-
-//            final String FILE = "C:\\Users\\Bang\\Documents\\file.h5";
-//            int file_id = -1;    // file identifier 
-//            int status = -1;
-//            
-//            HDF5Constants hdf5const = new HDF5Constants();
-//            
-//            String name = FILE;
-//            int flags = hdf5const.H5F_ACC_TRUNC;
-//            int create_id = hdf5const.H5P_DEFAULT;
-//            int access_id = hdf5const.H5P_DEFAULT;
-//
-//            // Create a new file using default file properties.
-//            file_id = H5.H5Fcreate (name, flags, create_id, access_id);
-//
-//            System.out.println ("\nThe file name is: " + name);
-//            System.out.println ("The file ID is: " + file_id);
-//
-//            status = H5.H5Fclose (file_id);
-
-        /////////////////////////////////////////////////////////   
+//            MongoClientURI mongoClientURI = new MongoClientURI("mongodb://ifeedadmin:qkdgustmd@ds041586.mlab.com:41586/ifeed");
+            mongoClient = new MongoClient( "localhost" , 27017 );
+//            mongoClient = new MongoClient(mongoClientURI);
 
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-   
     }
     
     
     
+    public void createNewDB(){
+        db = mongoClient.getDatabase(dbName);
+    }
     
     
+    public void insertDocument(int id,ArrayList<String> inputs,ArrayList<String> outputs){
+        MongoCollection col = db.getCollection(collectionName);
+        col.insertOne(
+                new Document()
+                    .append("id",id)
+                    .append("inputs", inputs)
+                    .append("outputs", outputs));
+    }
 }

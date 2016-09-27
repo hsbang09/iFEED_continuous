@@ -32,7 +32,9 @@ public class DataFileServlet extends HttpServlet {
     
     private Gson gson = new Gson();
     private static DataFileServlet instance=null;
-   
+    DataManagement dm = new DataManagement();
+    int data_id = 1;
+    
     /**
      *
      * @throws ServletException
@@ -101,7 +103,7 @@ public class DataFileServlet extends HttpServlet {
             
             if (requestID.equalsIgnoreCase("import_data")){
                 
-                
+                dm.createNewDB();
                 String path = request.getParameter("path");
                 int nInputs = Integer.parseInt(request.getParameter("numInputs"));
                 int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
@@ -136,13 +138,14 @@ public class DataFileServlet extends HttpServlet {
                             outputs.add(value);
                         }
                     }
+                    dm.insertDocument(data_id,inputs, outputs);
+                    data_id++;
                     results.add(new Architecture(inputs,outputs,input_names,output_names));
                 }
 
                 String jsonObj = gson.toJson(results);
                 outputString = jsonObj;
 
-                DataManagement dm = new DataManagement();
             }
 
         } catch(Exception e){
