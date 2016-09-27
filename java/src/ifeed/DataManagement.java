@@ -31,7 +31,8 @@ public class DataManagement {
     MongoClient mongoClient;
     MongoDatabase db;
     String dbName = "ifeed";
-    String collectionName = "testcollection1";
+    String metaDataCollectionName = "metadata";
+    String dataCollectionName = "data";
     
     public DataManagement(){
                 
@@ -51,9 +52,18 @@ public class DataManagement {
         db = mongoClient.getDatabase(dbName);
     }
     
+    public void encodeMetadata(int nData,ArrayList<String> inputNames, ArrayList<String> outputNames){
+        MongoCollection col = db.getCollection(metaDataCollectionName);
+        col.insertOne(
+                new Document()
+                    .append("nData", nData)
+                    .append("inputNames",inputNames)
+                    .append("outputNames",outputNames)
+        );
+    }
     
     public void insertDocument(int id,ArrayList<String> inputs,ArrayList<String> outputs){
-        MongoCollection col = db.getCollection(collectionName);
+        MongoCollection col = db.getCollection(dataCollectionName);
         col.insertOne(
                 new Document()
                     .append("id",id)

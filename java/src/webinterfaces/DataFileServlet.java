@@ -5,6 +5,7 @@
  */
 package webinterfaces;
 
+import java.util.HashMap;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class DataFileServlet extends HttpServlet {
     private Gson gson = new Gson();
     private static DataFileServlet instance=null;
     DataManagement dm = new DataManagement();
-    int data_id = 1;
+
     
     /**
      *
@@ -104,15 +105,18 @@ public class DataFileServlet extends HttpServlet {
             if (requestID.equalsIgnoreCase("import_data")){
                 
                 dm.createNewDB();
+                int data_id = 1;
+                
+                
                 String path = request.getParameter("path");
                 int nInputs = Integer.parseInt(request.getParameter("numInputs"));
                 int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
 
-    //            String resultPath = request.getParameter("filePath");
+                
                 String resultPath = path;
                 Workbook results_xls = Workbook.getWorkbook( new File( resultPath ) );
                 Sheet meas = results_xls.getSheet("Sheet1");    
-                ArrayList<Architecture> results = new ArrayList<>();
+                ArrayList<Architecture> arch_data = new ArrayList<>();
 
                 int nrows = meas.getRows();
                 int ncols = meas.getColumns();
@@ -126,6 +130,7 @@ public class DataFileServlet extends HttpServlet {
                 for (int i = 0;i<nOutputs;i++) {
                     output_names.add(header[i+nInputs].getContents());
                 }
+                
                 for (int i = 1;i<nrows;i++) {
                     Cell[] row = meas.getRow(i);
                     ArrayList<String> inputs = new ArrayList<>();
@@ -139,11 +144,12 @@ public class DataFileServlet extends HttpServlet {
                         }
                     }
                     dm.insertDocument(data_id,inputs, outputs);
+                    arch_data.add(new Architecture(data_id,inputs,outputs));
                     data_id++;
-                    results.add(new Architecture(inputs,outputs,input_names,output_names));
                 }
-
-                String jsonObj = gson.toJson(results);
+                dm.encodeMetadata(nrows, input_names, output_names);
+                CombinedDataSet dataset = new CombinedDataSet(nrows,input_names,output_names,arch_data);
+                String jsonObj = gson.toJson(dataset);
                 outputString = jsonObj;
 
             }
@@ -180,11 +186,30 @@ public class DataFileServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-    
+
 }
 
 
-        
-
+class CombinedDataSet{
+    
+    Metadata metadata;
+    ArrayList<Architecture> data;
+    
+    public CombinedDataSet(int nData, ArrayList<String> inputNames, ArrayList<String> outputNames, ArrayList<Architecture> data){
+        this.metadata = new Metadata(nData,inputNames,outputNames);
+        this.data = data;
+    }
+}
+class Metadata{
+    int nData;
+    ArrayList<String> inputNames;
+    ArrayList<String> outputNames;
+    
+    public Metadata(int nData, ArrayList<String> inputNames, ArrayList<String> outputNames){
+        this.nData=nData;
+        this.inputNames=inputNames;
+        this.outputNames=outputNames;
+    }
+}
 
 

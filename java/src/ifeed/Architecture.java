@@ -15,23 +15,16 @@ public class Architecture {
     
 //    input: nsat, nplane, alt, inc, RAAN, FOV     // RAAN is double, and the rest are int
 //    output: avg_global, max_global, avg_NH, max_NH, avg_SH, max_SH, avg_polar, max_polar, avg_US, max_US   
-
+    int id;
     ArrayList<String> inputs;
     ArrayList<String> outputs;
-    ArrayList<String> inputNames;
-    ArrayList<String> outputNames;
     
-    public Architecture(ArrayList<String> inputs, ArrayList<String> outputs){
+    public Architecture(int id, ArrayList<String> inputs, ArrayList<String> outputs){
         this.inputs=inputs;
         this.outputs=outputs;
+        this.id=id;
     }
-    public Architecture(ArrayList<String> inputs, ArrayList<String> outputs, ArrayList<String> inputNames, ArrayList<String> outputNames){
-        this.inputs=inputs;
-        this.outputs=outputs;
-        this.inputNames=inputNames;
-        this.outputNames=outputNames;
-    }
-    
+
     
     public ArrayList<String> getInputs(){
         return inputs;
@@ -39,11 +32,9 @@ public class Architecture {
     public ArrayList<String> getOutputs(){
         return outputs;
     }
-    public ArrayList<String> getInputNames(){
-        return inputNames;
+    public int getID(){
+        return id;
     }
-    public ArrayList<String> getOutputNames(){
-        return outputNames;
-    }
+
     
 }

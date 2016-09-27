@@ -304,10 +304,11 @@ function import_data(){
                     jsonObj_scatterPlot = JSON.parse(data);
                 },
                 complete: function () {
+                    
+                    
+                    
                     nInputs = jsonObj_scatterPlot[0].inputs.length;
                     nOutputs = jsonObj_scatterPlot[0].outputs.length;
-                    inputNames = jsonObj_scatterPlot[0].inputNames;
-                    outputNames = jsonObj_scatterPlot[0].outputNames;
 
                     d3.select("[id=axisOptions_x]").selectAll("option").remove();
                     d3.select("[id=axisOptions_y]").selectAll("option").remove();
