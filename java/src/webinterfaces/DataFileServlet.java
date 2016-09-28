@@ -105,7 +105,7 @@ public class DataFileServlet extends HttpServlet {
             if (requestID.equalsIgnoreCase("import_data")){
                 
                 dm.createNewDB();
-                int data_id = 1;
+                int data_id = 0;
                 
                 
                 String path = request.getParameter("path");
@@ -143,7 +143,7 @@ public class DataFileServlet extends HttpServlet {
                             outputs.add(value);
                         }
                     }
-                    dm.insertDocument(data_id,inputs, outputs);
+                    dm.insertDocument_data(data_id,inputs, outputs);
                     arch_data.add(new Architecture(data_id,inputs,outputs));
                     data_id++;
                 }
@@ -153,6 +153,33 @@ public class DataFileServlet extends HttpServlet {
                 outputString = jsonObj;
 
             }
+            
+            else if(requestID.equalsIgnoreCase("encode_candidate_features")){
+            
+                String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
+                String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
+
+    //              ["NSAT-exact:5","NSAT-exact:4","NSAT-min:1-max:3"]
+    //            
+                candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
+                candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
+                String[] candidate_split = candidate_raw.split(",");
+                String[] candidate_names_split = candidate_names_raw.split(",");
+    //            
+                ArrayList<String> candidates = new ArrayList<>();
+                ArrayList<String> candidates_names = new ArrayList<>();
+    //            
+                for(int i=0;i<candidate_split.length;i++){
+                    String cand_tmp = candidate_split[i];
+                    String candidateFeatureExpression = cand_tmp.substring(1,cand_tmp.length()-1);
+
+                    String cand_name_tmp = candidate_names_split[i];
+                    String candidateFeatureName = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
+                    
+                    dm.insertDocument_candidateFeatures(i, candidateFeatureName, candidateFeatureExpression);
+                }
+            }
+    
 
         } catch(Exception e){
             System.out.println(e.getMessage());

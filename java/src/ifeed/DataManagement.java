@@ -12,6 +12,7 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBList;
 import com.mongodb.DBCursor;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
@@ -27,11 +28,10 @@ import java.util.ArrayList;
 public class DataManagement {
     
     MongoClient mongoClient;
-    DB db;
-    MongoDatabase Mdb;
     String dbName = "ifeed";
     String metaDataCollectionName = "metadata";
     String dataCollectionName = "data";
+    String candidateFeatureCollectionName = "candidate_features";
     private static DataManagement instance = null;
 
     
@@ -59,18 +59,21 @@ public class DataManagement {
     
     
     public void createNewDB(){
-//        db = mongoClient.getDatabase(dbName);
-        db = mongoClient.getDB(dbName);
-        Mdb = mongoClient.getDatabase(dbName);
+        DB db = mongoClient.getDB(dbName);
+        MongoDatabase Mdb = mongoClient.getDatabase(dbName);
         if(db.collectionExists(metaDataCollectionName)){
             db.getCollection(metaDataCollectionName).drop();
         }
         if(db.collectionExists(dataCollectionName)){
             db.getCollection(dataCollectionName).drop();
         }
+        if(db.collectionExists(candidateFeatureCollectionName)){
+            db.getCollection(candidateFeatureCollectionName).drop();
+        }
     }
     
     public void encodeMetadata(int nData,ArrayList<String> inputNames, ArrayList<String> outputNames){
+        MongoDatabase Mdb = mongoClient.getDatabase(dbName);
         MongoCollection col = Mdb.getCollection(metaDataCollectionName);
         col.insertOne(
                 new Document()
@@ -79,8 +82,8 @@ public class DataManagement {
                     .append("outputNames",outputNames)
         );
     }
-    
-    public void insertDocument(int id,ArrayList<String> inputs,ArrayList<String> outputs){
+    public void insertDocument_data(int id,ArrayList<String> inputs,ArrayList<String> outputs){
+        MongoDatabase Mdb = mongoClient.getDatabase(dbName);
         MongoCollection col = Mdb.getCollection(dataCollectionName);
         col.insertOne(
                 new Document()
@@ -88,18 +91,60 @@ public class DataManagement {
                     .append("inputs", inputs)
                     .append("outputs", outputs));
     }
+    public void insertDocument_candidateFeatures(int featureID, String name, String expression){
+        MongoDatabase Mdb = mongoClient.getDatabase(dbName);
+        MongoCollection col = Mdb.getCollection(candidateFeatureCollectionName);
+        col.insertOne(
+                new Document()
+                    .append("id", featureID)
+                    .append("name",name)
+                    .append("expression",expression)
+        );
+    }
     
-    public void queryArchitecture(int id){
+    
+    
+    public ArrayList<String>[] queryAllCandidateFeatures(){
         
+        ArrayList<String>[] candidateFeatures = new ArrayList[2];
+        ArrayList<String> cfn = new ArrayList<>(); // candidate feature names
+        ArrayList<String> cfe = new ArrayList<>(); // candidate feature expressions
+        
+        DB db = mongoClient.getDB(dbName);
+        DBCollection col = db.getCollection(candidateFeatureCollectionName);
+        DBCursor cursor = col.find();
+        
+        while(cursor.hasNext()){
+            DBObject doc = cursor.next();
+            cfn.add((String) doc.get("name"));
+            cfe.add((String) doc.get("expression"));
+        }
+        candidateFeatures[0] = cfn;
+        candidateFeatures[1] = cfe;
+        return candidateFeatures;
+    }
+    
+    
+    public Architecture queryArchitecture(int id){
+        DB db = mongoClient.getDB(dbName);
         DBCollection col = db.getCollection(dataCollectionName);
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("id", id);
-        col.find(whereQuery);
         DBCursor cursor = col.find(whereQuery);
         DBObject doc = cursor.one();
-        
-        System.out.println(doc.get("inputs").getClass().toString());
-        System.out.println(doc.get("inputs").toString());
-        
+        ArrayList<String> inputs = (ArrayList<String>) doc.get("inputs");
+        ArrayList<String> outputs = (ArrayList<String>) doc.get("outputs");
+        return new Architecture(id,inputs,outputs);
     }
+    
+    public ArrayList<String> queryInputNames(){
+        DB db = mongoClient.getDB(dbName);
+        DBCollection col = db.getCollection(dataCollectionName);
+        DBCursor cursor = col.find();
+        DBObject doc = cursor.one();
+        ArrayList<String> inputNames = (ArrayList<String>) doc.get("inputNames");
+        return inputNames;
+    }
+    
+    
 }

@@ -57,6 +57,8 @@ public class DrivingFeaturesGenerator {
     private ArrayList<DrivingFeature> drivingFeatures;
     private ArrayList<DrivingFeature> userDef;
     
+    private ArrayList<String> inputNames;
+    
 
     public void initialize(ArrayList<Architecture> focus, ArrayList<Architecture> random, double supp, double conf, double lift){
 
@@ -146,9 +148,12 @@ public class DrivingFeaturesGenerator {
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
         // connected with +
+        
+        Scheme s = new Scheme();
+        s.setInputNames(inputNames);
+        
         int i=0;
         for(String cf:candidateFeatures){
-            Scheme s = new Scheme();
             String expression = cf;
             s.setExpression(expression);
 
@@ -190,6 +195,7 @@ public class DrivingFeaturesGenerator {
         int numFeature = drivingFeatures.size() + 1; // add class label as a last feature
         int[][] dataMat = new int[numData][numFeature];
         Scheme s = new Scheme();
+        s.setInputNames(inputNames);
         
         for(int i=0;i<numData;i++){
             Architecture a = random.get(i);
@@ -355,4 +361,7 @@ public class DrivingFeaturesGenerator {
     }
     
 
+    public void setInputNames(ArrayList<String> inputNames){
+        this.inputNames=inputNames;
+    }
 }

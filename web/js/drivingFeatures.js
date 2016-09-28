@@ -29,8 +29,7 @@ function getDrivingFeatures() {
         type: "POST",
         data: {ID: "getDrivingFeatures", selected: JSON.stringify(highlightedArchs), unselected:JSON.stringify(unhighlightedArchs),
             supp:support_threshold,conf:confidence_threshold,lift:lift_threshold,
-            candidateDrivingFeatures:JSON.stringify(candidateDrivingFeatures), candidateDrivingFeatures_names:JSON.stringify(candidateDrivingFeatures_names)},
-        
+        },
         async: false,
         success: function (data, textStatus, jqXHR){
             sortedDrivingFeatures = JSON.parse(data);
@@ -314,6 +313,19 @@ function generatePresetCandidateDF(){
             candidateDrivingFeatures_names.push(inputs[i] + " high and " + inputs[j] + " high");
         }
     }
+    
+    $.ajax({
+        url: "DataFileServlet",
+        type: "POST",
+        data: {ID: "encode_candidate_features", candidateDrivingFeatures:JSON.stringify(candidateDrivingFeatures),
+            candidateDrivingFeatures_names:JSON.stringify(candidateDrivingFeatures_names)},
+        async: false,
+        success: function (data, textStatus, jqXHR){
+        },
+        error: function (jqXHR, textStatus, errorThrown)
+        {alert("error");}
+    });
+
     presetGenerated = true;
 }
 

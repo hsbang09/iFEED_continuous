@@ -22,6 +22,8 @@ public class Scheme {
     // two options
     // check whether two values are exactly the same
     // check whether the value is within the min and max range
+    private ArrayList<String> inputNames;
+    
     
     public int compare(Architecture a){
 
@@ -38,7 +40,18 @@ public class Scheme {
             
             String type = thisExp.split("-")[0];  
             int type_int=-1;
-//            type_int = a.getInputNames().indexOf(type);
+            
+            
+            
+            
+            System.out.println(inputNames.toString());
+            
+            
+            
+            
+            
+            
+            type_int = inputNames.indexOf(type);
 
             double exact=-9999, min=-9999, max=-9999;
             for(int j=0;j<thisExp.split("-").length-1;j++){
@@ -101,7 +114,9 @@ public class Scheme {
         }
     }
     
-    
+    public void setInputNames(ArrayList<String> inputNames){
+        this.inputNames=inputNames;
+    }
     
     public void setExpression(String expression){
         this.expression=expression;
