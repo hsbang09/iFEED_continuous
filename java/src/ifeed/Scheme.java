@@ -40,17 +40,6 @@ public class Scheme {
             
             String type = thisExp.split("-")[0];  
             int type_int=-1;
-            
-            
-            
-            
-            System.out.println(inputNames.toString());
-            
-            
-            
-            
-            
-            
             type_int = inputNames.indexOf(type);
 
             double exact=-9999, min=-9999, max=-9999;

@@ -74,75 +74,53 @@ public class DrivingFeaturesGenerator {
         candidateFeatures = new ArrayList<>();
         candidateFeatures_names = new ArrayList<>();
     }
+    
+    
 
-    
-    
-    private double computeLift (Scheme scheme) {
-        
-        int count_focus = 0;
-        int count_random = 0;
+private double[] computeMetrics(Scheme s){
+    	
+    	double cnt_all= (double) random.size();
+        double cnt_F=0;
+        double cnt_S= (double) focus.size();
+        double cnt_SF=0;
+
         for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) ++count_focus;
+            if (s.compare(a) == 1) cnt_SF = cnt_SF+1.0;
         }
         for (Architecture a:random) {
-            if (scheme.compare(a) == 1) ++count_random;
+            if (s.compare(a) == 1) cnt_F = cnt_F+1.0;
         }
-        double lift =0;
-        if (count_random != 0) lift = (double) ( (double) count_focus/focus.size())/ ( (double) count_random/random.size());
+    	
+        double cnt_NS = cnt_all-cnt_S;
+        double cnt_NF = cnt_all-cnt_F;
+        double cnt_S_NF = cnt_S-cnt_SF;
+        double cnt_F_NS = cnt_F-cnt_SF;
         
-        return lift;
+    	double[] metrics = new double[4];
+    	
+        double support = cnt_SF/cnt_all;
+        double support_F = cnt_F/cnt_all;
+        double support_S = cnt_S/cnt_all;
+        double lift = (cnt_SF/cnt_S) / (cnt_F/cnt_all);
+        double conf_given_F = (cnt_SF)/(cnt_F);   // confidence (feature -> selection)
+        double conf_given_S = (cnt_SF)/(cnt_S);   // confidence (selection -> feature)
+
+    	
+    	metrics[0] = support;
+    	metrics[1] = lift;
+    	metrics[2] = conf_given_F;
+        metrics[3] = conf_given_S;
+
+    	return metrics;
     }
-    
-    private double computeSupport (Scheme scheme) {
-        
-        int count_data = 0;
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_data++;
-        }
-        double support = ((double) count_data)/((double)random.size());
-        return support;
-    }
-    
-    private double computeConfidenceGivenSelection (Scheme scheme){
-        int count_focus=0;
-        int count_random=0;
-        int focus_size = focus.size();
 
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_focus++;
-        }
-        for (Architecture a:random) {
-            if (scheme.compare(a) == 1) count_random++;
-        }
-        double conf = (double) ((double) count_focus)/((double) focus.size());   // confidence of a rule  {goodDesign} -> {feature}
-
-        return conf;
-    }
-    private double computeConfidenceGivenFeature (Scheme scheme) {
-        
-//        randomData
-//        focusData;        
-        int count_focus=0;
-        int count_random=0;
-        int focus_size = focus.size();
-
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_focus++;
-        }
-        for (Architecture a:random) {
-            if (scheme.compare(a) == 1) count_random++;
-        }
-        double conf = (double) ((double) count_focus)/((double) count_random);   // confidence of a rule  {feature} -> {goodDesign}
-
-        return conf;
-    } 
 
     public void setCandidateFeatures(ArrayList<String> input, ArrayList<String> names){
         candidateFeatures = input;
         candidateFeatures_names = names;
     }
 
-    
+
     public ArrayList<DrivingFeature> getDrivingFeatures (){
 //  two options
 //  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
@@ -153,20 +131,19 @@ public class DrivingFeaturesGenerator {
         s.setInputNames(inputNames);
         
         int i=0;
+        int total = candidateFeatures.size();
+        
         for(String cf:candidateFeatures){
             String expression = cf;
             s.setExpression(expression);
 
-            double support = computeSupport (s);
-            double lift = computeLift(s);
-            double conf = computeConfidenceGivenFeature(s);
-            double conf2 = computeConfidenceGivenSelection(s);
-            if (support > supp_threshold && lift > lift_threshold && conf > confidence_threshold && conf2 > confidence_threshold) {
+            double[] metrics = computeMetrics(s);
+            if (metrics[0] > supp_threshold && metrics[1]> lift_threshold && metrics[2] > confidence_threshold && metrics[3] > confidence_threshold) {
                 String name = candidateFeatures_names.get(i);
-                drivingFeatures.add(new DrivingFeature(name, expression,lift, support, conf, conf2));
-                
+                drivingFeatures.add(new DrivingFeature(name, expression,metrics));
             }
             i = i+1;
+            System.out.println( "...." + i + "/" + total);
         }
         
 //        getDataFeatureMat();

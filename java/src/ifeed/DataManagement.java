@@ -123,7 +123,20 @@ public class DataManagement {
         candidateFeatures[1] = cfe;
         return candidateFeatures;
     }
-    
+    public ArrayList<Architecture> queryAllArchitecture(){
+        DB db = mongoClient.getDB(dbName);
+        DBCollection col = db.getCollection(dataCollectionName);
+        DBCursor cursor = col.find();
+        ArrayList<Architecture> allArch = new ArrayList<>();
+        while(cursor.hasNext()){
+            DBObject doc = cursor.next();
+            int id = (int) doc.get("id");
+            ArrayList<String> inputs = (ArrayList<String>) doc.get("inputs");
+            ArrayList<String> outputs = (ArrayList<String>) doc.get("outputs");
+            allArch.add(new Architecture(id,inputs,outputs));
+        }
+        return allArch;
+    }
     
     public Architecture queryArchitecture(int id){
         DB db = mongoClient.getDB(dbName);
@@ -139,7 +152,7 @@ public class DataManagement {
     
     public ArrayList<String> queryInputNames(){
         DB db = mongoClient.getDB(dbName);
-        DBCollection col = db.getCollection(dataCollectionName);
+        DBCollection col = db.getCollection(metaDataCollectionName);
         DBCursor cursor = col.find();
         DBObject doc = cursor.one();
         ArrayList<String> inputNames = (ArrayList<String>) doc.get("inputNames");

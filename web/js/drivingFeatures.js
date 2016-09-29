@@ -13,22 +13,22 @@ function getDrivingFeatures() {
     var support_threshold = d3.select("[id=support_threshold_input]")[0][0].value;
     var confidence_threshold = d3.select("[id=confidence_threshold_input]")[0][0].value;
     var lift_threshold = d3.select("[id=lift_threshold_input]")[0][0].value;
-    var unhighlightedArchs = [];
+    
+    var hiddenArchs = [];
     var highlightedArchs = [];
     
-    
-    d3.selectAll("[class=dot]")[0].forEach(function(d){
-        unhighlightedArchs.push(d.__data__.id);
+    d3.selectAll("[class=dot_hidden]")[0].forEach(function(d){
+        hiddenArchs.push(d.__data__.id);
     });
     d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
         highlightedArchs.push(d.__data__.id);
     });
-
+    
     $.ajax({
         url: "DataAnalysisServlet",
         type: "POST",
-        data: {ID: "getDrivingFeatures", selected: JSON.stringify(highlightedArchs), unselected:JSON.stringify(unhighlightedArchs),
-            supp:support_threshold,conf:confidence_threshold,lift:lift_threshold,
+        data: {ID: "getDrivingFeatures", selected: JSON.stringify(highlightedArchs), hidden:JSON.stringify(hiddenArchs),
+            supp:support_threshold,conf:confidence_threshold,lift:lift_threshold, nSelected: highlightedArchs.length,
         },
         async: false,
         success: function (data, textStatus, jqXHR){
@@ -390,10 +390,10 @@ function display_drivingFeatures(source,sortby) {
 
 
     for (var i=0;i<size;i++){
-        lifts.push(source[i].lift);
-        supps.push(source[i].supp);
-        conf1s.push(source[i].conf);
-        conf2s.push(source[i].conf2);
+        lifts.push(source[i].metrics[1]);
+        supps.push(source[i].metrics[0]);
+        conf1s.push(source[i].metrics[2]);
+        conf2s.push(source[i].metrics[3]);
         drivingFeatures.push(source[i]);
         drivingFeatureNames.push(source[i].name);
         drivingFeatureExpressions.push(source[i].expression);
@@ -545,28 +545,28 @@ function display_drivingFeatures(source,sortby) {
             .attr("width", xScale_df(1))
             .attr("y", function(d) { 
                 if(sortby==="lift"){
-                    return yScale_df(d.lift); 
+                    return yScale_df(d.metrics[1]); 
                 } else if(sortby==="supp"){
-                    return yScale_df(d.supp); 
+                    return yScale_df(d.metrics[0]); 
                 }else if(sortby==="confave"){
-                    return yScale_df((d.conf+d.conf2)/2); 
+                    return yScale_df((d.metrics[2]+d.metrics[3])/2); 
                 }else if(sortby==="conf1"){
-                    return yScale_df(d.conf); 
+                    return yScale_df(d.metrics[2]); 
                 }else if(sortby==="conf2"){
-                    return yScale_df(d.conf2); 
+                    return yScale_df(d.metrics[3]); 
                 }
             })
             .attr("height", function(d) { 
                 if(sortby==="lift"){
-                    return height_df - yScale_df(d.lift); 
+                    return height_df - yScale_df(d.metrics[1]); 
                 } else if(sortby==="supp"){
-                    return height_df - yScale_df(d.supp); 
+                    return height_df - yScale_df(d.metrics[0]); 
                 }else if(sortby==="confave"){
-                    return height_df - yScale_df((d.conf+d.conf2)/2); 
+                    return height_df - yScale_df((d.metrics[2]+d.metrics[3])/2); 
                 }else if(sortby==="conf1"){
-                    return height_df - yScale_df(d.conf); 
+                    return height_df - yScale_df(d.metrics[2]); 
                 }else if(sortby==="conf2"){
-                    return height_df - yScale_df(d.conf2); 
+                    return height_df - yScale_df(d.metrics[3]); 
                 }
             })
             .attr("transform",function(d){
@@ -613,10 +613,10 @@ function display_drivingFeatures(source,sortby) {
                     var tmp= d.id;
                     var name = d.name;
                     var expression = d.expression;
-                    var lift = d.lift;
-                    var supp = d.supp;
-                    var conf = d.conf;
-                    var conf2 = d.conf2;
+                    var lift = d.metrics[1];
+                    var supp = d.metrics[0];
+                    var conf = d.metrics[2];
+                    var conf2 = d.metrics[3];
 
                     d3.selectAll("[class=dot]")[0].forEach(function(d){
                         if(evalFeatureExpression(expression,d.__data__)){

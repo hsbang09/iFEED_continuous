@@ -175,7 +175,6 @@ function draw_scatterPlot(source) {
 
     d3.select("[id=getDrivingFeaturesButton]").on("click", getDrivingFeatures);
     d3.select("[id=getClassificationTreeButton]").on("click",getClassificationTree);
-//    d3.select("[id=selectArchsWithinRangeButton]").on("click", selectArchsWithinRange);
     d3.select("[id=cancel_selection]").on("click",cancelDotSelections);
     d3.select("[id=hide_selection]").on("click",hideSelections);
     d3.select("[id=show_all_archs]").on("click",showAllArchs);
@@ -225,87 +224,19 @@ function draw_scatterPlot(source) {
 }
 
 
-function selectArchsWithinRange() {
-
-    var clickedArchs = d3.selectAll("[class=dot_clicked]");
-    var unClickedArchs = d3.selectAll("[class=dot]");
-
-    var minCost = d3.select("[id=selectArchsWithinRange_minCost]")[0][0].value;
-    var maxCost = d3.select("[id=selectArchsWithinRange_maxCost]")[0][0].value;
-    var minScience = d3.select("[id=selectArchsWithinRange_minScience]")[0][0].value;
-    var maxScience = d3.select("[id=selectArchsWithinRange_maxScience]")[0][0].value;
-
-    if (maxCost == "inf") {
-        maxCost = 1000000000000;
-    }
-
-    unClickedArchs.filter(function (d) {
-
-        var sci = d.science;
-        var cost = d.cost;
-
-        if (sci < minScience) {
-            return false;
-        } else if (sci > maxScience) {
-            return false;
-        } else if (cost < minCost) {
-            return false;
-        } else if (cost > maxCost) {
-            return false;
-        } else {
-            return true;
-        }
-    })
-            .attr("class", "dot_clicked")
-            .style("fill", "#0040FF");
-
-    clickedArchs.filter(function (d) {
-
-        var sci = d.science;
-        var cost = d.cost;
-
-        if (sci < minScience) {
-            return true;
-        } else if (sci > maxScience) {
-            return true;
-        } else if (cost < minCost) {
-            return true;
-        } else if (cost > maxCost) {
-            return true;
-        } else {
-            return false;
-        }
-    })
-            .attr("class", "dot")
-            .style("fill", function (d) {
-                if (d.status == "added") {
-                    return "#188836";
-                } else if (d.status == "justAdded") {
-                    return "#20FE5B";
-                } else {
-                    return "#000000";
-                }
-            });
-
-    d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
-}
-
 function cancelDotSelections(){
 
     var clickedArchs = d3.selectAll("[class=dot_clicked]");
-
     clickedArchs.attr("class", "dot")
             .style("fill", function (d) {
                     return "#000000";
             });
-  
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
 }
 
 function hideSelections(){
 
     var clickedArchs = d3.selectAll("[class=dot_clicked]");
-
     clickedArchs.attr("class", "dot_hidden")
             .style("opacity", 0.04);     
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
@@ -314,13 +245,11 @@ function hideSelections(){
 function showAllArchs(){
 
     var hiddenArchs = d3.selectAll("[class=dot_hidden]");
-
     hiddenArchs.attr("class", "dot")
             .style("fill", function (d) {
                     return "#000000";
             })
             .style("opacity",1);
-    
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());
     d3.select("[id=numOfArchs_inputBox]").attr("value",numOfArchs());
 }
@@ -387,11 +316,10 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
     
     if (d3.select("[id=scatterPlot_option]").attr("class")==="drag_deselection"){
 
-
         translate_tmp_local[0] = translate_tmp[0];
         translate_tmp_local[1] = translate_tmp[1];
         scale_tmp_local = scale_tmp;
-
+        
         var svg_tmp =  d3.select("[id=scatterPlotFigure]")
             .select("svg")
             .on("mousedown",null)
@@ -400,7 +328,7 @@ function scatterPlot_toggle_option(){ // three options: zoom, drag_selection, dr
 
         d3.select("[id=scatterPlot_option]").attr("class","zoom")
                 .style("background-color", "#DFDFDF");
-
+        
         d3.select("[id=scatterPlotFigure]")
             .select("svg")
             .call(

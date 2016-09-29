@@ -107,12 +107,10 @@ public class DataFileServlet extends HttpServlet {
                 dm.createNewDB();
                 int data_id = 0;
                 
-                
                 String path = request.getParameter("path");
                 int nInputs = Integer.parseInt(request.getParameter("numInputs"));
                 int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
 
-                
                 String resultPath = path;
                 Workbook results_xls = Workbook.getWorkbook( new File( resultPath ) );
                 Sheet meas = results_xls.getSheet("Sheet1");    
