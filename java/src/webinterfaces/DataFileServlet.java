@@ -9,6 +9,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.io.File;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -100,8 +107,7 @@ public class DataFileServlet extends HttpServlet {
         try {
             
             if (requestID.equalsIgnoreCase("import_data")){
-                
-                
+
                 String path = request.getParameter("path");
                 int nInputs = Integer.parseInt(request.getParameter("numInputs"));
                 int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
@@ -138,11 +144,75 @@ public class DataFileServlet extends HttpServlet {
                     }
                     results.add(new Architecture(inputs,outputs,input_names,output_names));
                 }
-
                 String jsonObj = gson.toJson(results);
                 outputString = jsonObj;
-
             }
+            
+            else if (requestID.equalsIgnoreCase("import_data_csv")){
+                String path = request.getParameter("path");
+                int nInputs = Integer.parseInt(request.getParameter("numInputs"));
+                int nOutputs = Integer.parseInt(request.getParameter("numOutputs"));
+                ArrayList<Architecture> results = new ArrayList<>();
+                boolean header = true;
+                
+                String line ="";
+                BufferedReader br = null;
+
+                try{
+                    String resultPath = path;
+                    br = new BufferedReader(new FileReader(resultPath));
+                    
+                    ArrayList<String> input_names = new ArrayList<>(); 
+                    ArrayList<String> output_names = new ArrayList<>();
+                    while((line=br.readLine())!=null){
+
+                        String[] row = line.split(",");
+                        if(row[0].isEmpty()){
+                            continue;
+                        }
+
+                        ArrayList<String> inputs = new ArrayList<>();
+                        ArrayList<String> outputs = new ArrayList<>();
+                        if(header){
+                            for (int i = 0;i<nInputs;i++) {
+                                input_names.add(row[i]);
+                            }
+                            for (int i = 0;i<nOutputs;i++) {
+                                output_names.add(row[i+nInputs]);
+                            }
+                            header=false;
+                        }else{
+                            for (int j = 0;j < row.length; j++) {
+                                String value = row[j];
+                                if(value.isEmpty()){
+                                    value = "0";
+                                }
+                                if(j<nInputs){
+                                    inputs.add(value);
+                                } else{
+                                    outputs.add(value);
+                                }
+                            }
+                            results.add(new Architecture(inputs,outputs,input_names,output_names));
+                        }
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+                if(br != null){
+                    try{
+                        br.close();
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                String jsonObj = gson.toJson(results);
+                outputString = jsonObj;
+            }
+            
+            
+            
+            
 
         } catch(Exception e){
             System.out.println(e.getMessage());

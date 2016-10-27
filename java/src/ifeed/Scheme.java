@@ -28,33 +28,38 @@ public class Scheme {
         String[] exp_split = expression.split(" and ");
         int flag = 1;
         
-        for(int i=0;i<exp_split.length;i++){
-            String thisExp = exp_split[i];
+        for (String thisExp : exp_split) {
+            
             
 //  two options
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "exact:" + value + "]"
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "min:" + value + "/" + "max:" + value + "]"
+            
 // connected with &
             
-            String type = thisExp.split("-")[0];  
+            String type = thisExp.split("\\[")[0];  
             int type_int=-1;
             type_int = a.getInputNames().indexOf(type);
-
             double exact=-9999, min=-9999, max=-9999;
-            for(int j=0;j<thisExp.split("-").length-1;j++){
-                
-                String compare = thisExp.split("-")[j+1].split(":")[0];
-                Double value = Double.parseDouble(thisExp.split("-")[j+1].split(":")[1]);
+            
+            String condset = thisExp.split("\\[")[1];
+            for(int j=0;j<condset.split("/").length;j++){
 
-                if(compare.equals("exact")){
+                String compare = thisExp.split("/")[j];
+                if(compare.contains("]")){
+                    compare = compare.split("\\]")[0];
+                }
+                String[] compare_split = compare.split(":");
+                String sign = compare_split[0];
+                Double value = Double.parseDouble(compare_split[1]);
+                if(sign.equals("exact")){
                     exact=value;
-                }else if(compare.equals("min")){
+                }else if(sign.equals("min")){
                     min=value;
-                }else if(compare.equals("max")){
+                }else if(sign.equals("max")){
                     max=value;
                 }
             }
-            
             if(!compare_single(a,type_int,exact,min,max)){
                 flag=0;
             }
@@ -107,21 +112,7 @@ public class Scheme {
         this.expression=expression;
     }
     
-//    public void setInputType(int inputType){
-//        this.inputType=inputType;
-//    }
-//    public void setExact(double exact){
-//        this.exact=exact;
-//    }
-//    public void setMin(double min){
-//        this.min=min;
-//    }
-//    public void setMax(double max){
-//        this.max=max;
-//    }
-    
-    
-    
+
     
     
     

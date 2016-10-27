@@ -43,8 +43,8 @@ import javax.swing.JFrame;
 public class DrivingFeaturesGenerator {
     private static DrivingFeaturesGenerator instance = null;
     
-    private ArrayList<Architecture> focus; // behavioral
-    private ArrayList<Architecture> random; // non_behavioral
+    private ArrayList<Architecture> behavioral; // behavioral
+    private ArrayList<Architecture> non_behavioral; // non_behavioral
     
     private ArrayList<String> candidateFeatures;
     private ArrayList<String> candidateFeatures_names;
@@ -58,10 +58,10 @@ public class DrivingFeaturesGenerator {
     private ArrayList<DrivingFeature> userDef;
     
 
-    public void initialize(ArrayList<Architecture> focus, ArrayList<Architecture> random, double supp, double conf, double lift){
+    public void initialize(ArrayList<Architecture> behavioral, ArrayList<Architecture> non_behavioral, double supp, double conf, double lift){
 
-        this.focus = focus;
-        this.random = random;
+        this.behavioral = behavioral;
+        this.non_behavioral = non_behavioral;
         this.supp_threshold=supp;
         this.confidence_threshold=conf;
         this.lift_threshold=lift;
@@ -73,67 +73,50 @@ public class DrivingFeaturesGenerator {
         candidateFeatures_names = new ArrayList<>();
     }
 
-    
-    
-    private double computeLift (Scheme scheme) {
+
+    private double[] computeMetrics(Scheme s){
+
+    	double cnt_all= (double) non_behavioral.size() + behavioral.size();
+        double cnt_F=0.0;
+        double cnt_S= (double) behavioral.size();
+        double cnt_SF=0.0;
         
-        int count_focus = 0;
-        int count_random = 0;
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) ++count_focus;
+        for (Architecture a: behavioral) {
+            if (s.compare(a) == 1) {
+            	cnt_SF = cnt_SF+1.0;
+            	cnt_F = cnt_F + 1.0;
+            }
         }
-        for (Architecture a:random) {
-            if (scheme.compare(a) == 1) ++count_random;
+        for (Architecture a: non_behavioral) {
+            if (s.compare(a) == 1) cnt_F = cnt_F+1.0;
         }
-        double lift =0;
-        if (count_random != 0) lift = (double) ( (double) count_focus/focus.size())/ ( (double) count_random/random.size());
+
         
-        return lift;
+        double cnt_NS = cnt_all-cnt_S;
+        double cnt_NF = cnt_all-cnt_F;
+        double cnt_S_NF = cnt_S-cnt_SF;
+        double cnt_F_NS = cnt_F-cnt_SF;
+        
+    	double[] metrics = new double[4];
+    	
+        double support = cnt_SF/cnt_all;
+        double support_F = cnt_F/cnt_all;
+        double support_S = cnt_S/cnt_all;
+        double lift = (cnt_SF/cnt_S) / (cnt_F/cnt_all);
+        double conf_given_F = (cnt_SF)/(cnt_F);   // confidence (feature -> selection)
+        double conf_given_S = (cnt_SF)/(cnt_S);   // confidence (selection -> feature)
+
+
+    	metrics[0] = support;
+    	metrics[1] = lift;
+    	metrics[2] = conf_given_F;
+    	metrics[3] = conf_given_S;
+    	
+    	return metrics;
     }
     
-    private double computeSupport (Scheme scheme) {
-        
-        int count_data = 0;
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_data++;
-        }
-        double support = ((double) count_data)/((double)random.size());
-        return support;
-    }
-    
-    private double computeConfidenceGivenSelection (Scheme scheme){
-        int count_focus=0;
-        int count_random=0;
-        int focus_size = focus.size();
 
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_focus++;
-        }
-        for (Architecture a:random) {
-            if (scheme.compare(a) == 1) count_random++;
-        }
-        double conf = (double) ((double) count_focus)/((double) focus.size());   // confidence of a rule  {goodDesign} -> {feature}
 
-        return conf;
-    }
-    private double computeConfidenceGivenFeature (Scheme scheme) {
-        
-//        randomData
-//        focusData;        
-        int count_focus=0;
-        int count_random=0;
-        int focus_size = focus.size();
-
-        for (Architecture a:focus) {
-            if (scheme.compare(a) == 1) count_focus++;
-        }
-        for (Architecture a:random) {
-            if (scheme.compare(a) == 1) count_random++;
-        }
-        double conf = (double) ((double) count_focus)/((double) count_random);   // confidence of a rule  {feature} -> {goodDesign}
-
-        return conf;
-    } 
 
     public void setCandidateFeatures(ArrayList<String> input, ArrayList<String> names){
         candidateFeatures = input;
@@ -142,9 +125,13 @@ public class DrivingFeaturesGenerator {
 
     
     public ArrayList<DrivingFeature> getDrivingFeatures (){
+        
+        long t0 = System.currentTimeMillis();
+        
 //  two options
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "exact:" + value + "]"
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "min:" + value + "/" + "max:" + value + "]"
+        
         // connected with +
         int i=0;
         for(String cf:candidateFeatures){
@@ -152,14 +139,10 @@ public class DrivingFeaturesGenerator {
             String expression = cf;
             s.setExpression(expression);
 
-            double support = computeSupport (s);
-            double lift = computeLift(s);
-            double conf = computeConfidenceGivenFeature(s);
-            double conf2 = computeConfidenceGivenSelection(s);
-            if (support > supp_threshold && lift > lift_threshold && conf > confidence_threshold && conf2 > confidence_threshold) {
+            double[] metrics = computeMetrics(s);
+            if (metrics[0] > supp_threshold && metrics[1] > lift_threshold && metrics[2] > confidence_threshold && metrics[3] > confidence_threshold) {
                 String name = candidateFeatures_names.get(i);
-                drivingFeatures.add(new DrivingFeature(name, expression,lift, support, conf, conf2));
-                
+                drivingFeatures.add(new DrivingFeature(name, expression,metrics));
             }
             i = i+1;
         }
@@ -170,6 +153,11 @@ public class DrivingFeaturesGenerator {
 //        for(String mrmr:mRMR){
 //            System.out.println(drivingFeatures.get(Integer.parseInt(mrmr)).getName());
 //        }
+        
+        
+        long t1 = System.currentTimeMillis();
+        System.out.println( "Driving feature extraction done in: " + String.valueOf((t1-t0)/1000) + " sec");
+        
         return drivingFeatures;
     }
     
@@ -186,14 +174,21 @@ public class DrivingFeaturesGenerator {
 
     public int[][] getDataFeatureMat(){
         
-        int numData = random.size();
+        int numData = behavioral.size() + non_behavioral.size();
         int numFeature = drivingFeatures.size() + 1; // add class label as a last feature
         int[][] dataMat = new int[numData][numFeature];
         Scheme s = new Scheme();
         
         for(int i=0;i<numData;i++){
-            Architecture a = random.get(i);
-            
+            Architecture a;
+            if(i < behavioral.size()){
+                a = behavioral.get(i);
+                dataMat[i][numFeature-1]=1;
+            }else{
+                a = non_behavioral.get(i);
+                dataMat[i][numFeature-1]=0;
+            }
+
             for(int j=0;j<numFeature-1;j++){
                 DrivingFeature f = drivingFeatures.get(j);
                 String name = f.getName();
@@ -205,19 +200,6 @@ public class DrivingFeaturesGenerator {
                 } else{
                     dataMat[i][j]=0;
                 }
-            }
-            
-            boolean foundMatch = false;
-            for (Architecture compArch:focus){
-                if (compareArchitectures(compArch, a)){
-                    foundMatch = true; 
-                    break;
-                }
-            }
-            if(foundMatch==false){
-                dataMat[i][numFeature-1]=0;
-            } else{
-                dataMat[i][numFeature-1]=1;
             }
         }
         dataFeatureMat = dataMat;
@@ -260,7 +242,7 @@ public class DrivingFeaturesGenerator {
     
     public Instances addData(Instances dataset){
         
-        for(int i=0;i<random.size();i++){
+        for(int i=0;i<behavioral.size()+non_behavioral.size();i++){
             double[] values = new double[drivingFeatures.size()+1];
             for(int j=0;j<drivingFeatures.size()+1;j++){
                 values[j] = (double) dataFeatureMat[i][j];

@@ -35,6 +35,9 @@ public class DataAnalysisServlet extends HttpServlet {
     ArrayList<DrivingFeature> DFs;
     ArrayList<DrivingFeature> sortedDFs;
     
+    ArrayList<String> candidates;
+    ArrayList<String> candidates_names;
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -104,15 +107,39 @@ public class DataAnalysisServlet extends HttpServlet {
 //       + "{"inputs":["1","1","500","51","22.5","25"],"objectives":["111.311","107.032","45.023","45.801","1000","44.589","119.654","114.799","66.415","67.727","168","62.426"]},"
 //       + "{"inputs":["1","1","500","51","13.5","25"],"objectives":["116.933","110.228","66.05","66.193","1000","143.498","123.477","120.659","70.096","70.096","168","143.937"]}]"
             
+        if(requestID.equalsIgnoreCase("setCandidateFeatures")){
             
+            candidates = new ArrayList<>();
+            candidates_names = new ArrayList<>();
+            
+            String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
+            String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
+            
+//              ["NSAT[exact:5]","NSAT[exact:4]","NSAT[min:1/max:3]"]
+            
+            candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
+            candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
+            String[] candidate_split = candidate_raw.split(",");
+            String[] candidate_names_split = candidate_names_raw.split(",");
+
+            for(int i=0;i<candidate_split.length;i++){
+                String cand_tmp = candidate_split[i];
+                cand_tmp = cand_tmp.substring(1,cand_tmp.length()-1);
+                candidates.add(cand_tmp);
+                String cand_name_tmp = candidate_names_split[i];
+                cand_name_tmp = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
+                candidates_names.add(cand_name_tmp);
+//                System.out.println(cand_tmp);
+            }
+        } 
         
-        if(requestID.equalsIgnoreCase("getDrivingFeatures")){
+        else if(requestID.equalsIgnoreCase("getDrivingFeatures")){
             
             double support_threshold = Double.parseDouble(request.getParameter("supp"));
             double confidence_threshold = Double.parseDouble(request.getParameter("conf"));
             double lift_threshold = Double.parseDouble(request.getParameter("lift")); 
              
-            ArrayList<Architecture> all = new ArrayList<>();
+            ArrayList<Architecture> unselected = new ArrayList<>();
             ArrayList<Architecture> selected = new ArrayList<>();
             
             String unselected_raw = request.getParameter("unselected");
@@ -127,19 +154,40 @@ public class DataAnalysisServlet extends HttpServlet {
             
             ArrayList<String> inputs;
             ArrayList<String> outputs;
-            ArrayList<String> inputNames;
-            ArrayList<String> outputNames;
+            ArrayList<String> inputNames = new ArrayList<>();
+            ArrayList<String> outputNames = new ArrayList<>();
 
+            
+            String inputNames_raw = request.getParameter("inputNames");
+            int indStart = inputNames_raw.indexOf("[");
+            int indEnd = inputNames_raw.indexOf("]");
+            String inside_name = inputNames_raw.substring(indStart+1,indEnd);
+            String[] inside_split_name = inside_name.split(",");
+            for(int i=0;i<inside_split_name.length;i++){
+                String name = inside_split_name[i];
+                name = name.substring(1,name.length()-1);
+                inputNames.add(name);
+            }
+            String outputNames_raw = request.getParameter("outputNames");
+            indStart = outputNames_raw.indexOf("[");
+            indEnd = outputNames_raw.indexOf("]");
+            inside_name = outputNames_raw.substring(indStart+1,indEnd);
+            inside_split_name = inside_name.split(",");
+            for(int i=0;i<inside_split_name.length;i++){
+                String name = inside_split_name[i];
+                name = name.substring(1,name.length()-1);
+                outputNames.add(name);
+            }
+
+            
             while(true){
                 if(!unselected_raw.contains("[")){
                     break;
                 }
                 inputs = new ArrayList<>();
                 outputs = new ArrayList<>();
-                inputNames = new ArrayList<>();
-                outputNames = new ArrayList<>();
-                
-                for (int j=0;j<4;j++){
+
+                for (int j=0;j<2;j++){
                     int start = unselected_raw.indexOf("[");
                     int end = unselected_raw.indexOf("]");
                     String inside = unselected_raw.substring(start+1,end);
@@ -151,16 +199,12 @@ public class DataAnalysisServlet extends HttpServlet {
                             inputs.add(num);
                         }else if(j==1){
                             outputs.add(num);
-                        }else if(j==2){
-                            inputNames.add(num);
-                        }else if(j==3){
-                            outputNames.add(num);
                         }
                     }
                     unselected_raw = unselected_raw.substring(end+1);
                 }
 
-                all.add(new Architecture(inputs, outputs,inputNames,outputNames));
+                unselected.add(new Architecture(inputs, outputs,inputNames,outputNames));
             }
 
             while(true){
@@ -169,10 +213,8 @@ public class DataAnalysisServlet extends HttpServlet {
                 }
                 inputs = new ArrayList<>();
                 outputs = new ArrayList<>();
-                inputNames = new ArrayList<>();
-                outputNames = new ArrayList<>();
                 
-                for (int j=0;j<4;j++){
+                for (int j=0;j<2;j++){
                     int start = selected_raw.indexOf("[");
                     int end = selected_raw.indexOf("]");
                     String inside = selected_raw.substring(start+1,end);
@@ -184,49 +226,18 @@ public class DataAnalysisServlet extends HttpServlet {
                             inputs.add(num);
                         }else if(j==1){
                             outputs.add(num);
-                        }else if(j==2){
-                            inputNames.add(num);
-                        }else if(j==3){
-                            outputNames.add(num);
                         }
                     }
                     selected_raw = selected_raw.substring(end+1);
                 }
                 
                 selected.add(new Architecture(inputs, outputs,inputNames,outputNames));
-                all.add(new Architecture(inputs,outputs,inputNames,outputNames));
             }
-            
-            
-            String candidate_raw = request.getParameter("candidateDrivingFeatures"); 
-            String candidate_names_raw = request.getParameter("candidateDrivingFeatures_names");
-            
-//              ["NSAT-exact:5","NSAT-exact:4","NSAT-min:1-max:3"]
-            
-            candidate_raw = candidate_raw.substring(1,candidate_raw.length()-1);
-            candidate_names_raw = candidate_names_raw.substring(1,candidate_names_raw.length()-1);
-            String[] candidate_split = candidate_raw.split(",");
-            String[] candidate_names_split = candidate_names_raw.split(",");
-            
-            ArrayList<String> candidates = new ArrayList<>();
-            ArrayList<String> candidates_names = new ArrayList<>();
-            
-            for(int i=0;i<candidate_split.length;i++){
-                String cand_tmp = candidate_split[i];
-                cand_tmp = cand_tmp.substring(1,cand_tmp.length()-1);
-                candidates.add(cand_tmp);
-                
-                String cand_name_tmp = candidate_names_split[i];
-                cand_name_tmp = cand_name_tmp.substring(1,cand_name_tmp.length()-1);
-                candidates_names.add(cand_name_tmp);
-                
-                System.out.println(cand_tmp);
-            }
-            
+ 
             System.out.println("selectedLength: " + selected.size());
-            System.out.println("allLength: " + all.size());
+            System.out.println("unselectedLength: " + unselected.size());
             
-            dfsGen.initialize(selected, all, support_threshold,confidence_threshold,lift_threshold);
+            dfsGen.initialize(selected, unselected, support_threshold,confidence_threshold,lift_threshold);
             dfsGen.setCandidateFeatures(candidates,candidates_names);
             
             DFs = dfsGen.getDrivingFeatures();
@@ -247,25 +258,25 @@ public class DataAnalysisServlet extends HttpServlet {
                 } 
                 
                 if(sortingCriteria.equalsIgnoreCase("lift")){
-                    value = df.getLift();
-                    maxVal = sortedDFs.get(0).getLift();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getLift();
+                    value = df.getMetrics()[1];
+                    maxVal = sortedDFs.get(0).getMetrics()[1];
+                    minVal = sortedDFs.get(sortedDFs.size()-1).getMetrics()[1];
                 } else if(sortingCriteria.equalsIgnoreCase("supp")){
-                    value = df.getSupport();
-                    maxVal = sortedDFs.get(0).getSupport();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getSupport();
+                    value = df.getMetrics()[0];
+                    maxVal = sortedDFs.get(0).getMetrics()[0];
+                    minVal = sortedDFs.get(sortedDFs.size()-1).getMetrics()[0];
                 } else if(sortingCriteria.equalsIgnoreCase("confave")){
-                    value = (double) (df.getConfidence() + df.getConfidence2())/2;
-                    maxVal = (double) (sortedDFs.get(0).getConfidence() + sortedDFs.get(0).getConfidence2())/2;
-                    minVal = (double) (sortedDFs.get(sortedDFs.size()-1).getConfidence() + sortedDFs.get(sortedDFs.size()-1).getConfidence2())/2;
+                    value = (double) (df.getMetrics()[2] + df.getMetrics()[3])/2;
+                    maxVal = (double) (sortedDFs.get(0).getMetrics()[2] + sortedDFs.get(0).getMetrics()[3])/2;
+                    minVal = (double) (sortedDFs.get(sortedDFs.size()-1).getMetrics()[2] + sortedDFs.get(sortedDFs.size()-1).getMetrics()[3])/2;
                 } else if(sortingCriteria.equalsIgnoreCase("conf1")){
-                    value = df.getConfidence();
-                    maxVal = sortedDFs.get(0).getConfidence();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence();
+                    value = df.getMetrics()[2];
+                    maxVal = sortedDFs.get(0).getMetrics()[2];
+                    minVal = sortedDFs.get(sortedDFs.size()-1).getMetrics()[2];
                 } else if(sortingCriteria.equalsIgnoreCase("conf2")){
-                    value = df.getConfidence2();
-                    maxVal = sortedDFs.get(0).getConfidence2();
-                    minVal = sortedDFs.get(sortedDFs.size()-1).getConfidence2();
+                    value = df.getMetrics()[3];
+                    maxVal = sortedDFs.get(0).getMetrics()[3];
+                    minVal = sortedDFs.get(sortedDFs.size()-1).getMetrics()[3];
                 }
                 
                 if (value >= maxVal){
@@ -278,20 +289,20 @@ public class DataAnalysisServlet extends HttpServlet {
                             double refval = 0.0;
                             double refval2 = 0.0;
                             if(sortingCriteria.equalsIgnoreCase("lift")){
-                                refval = sortedDFs.get(j).getLift();
-                                refval2 = sortedDFs.get(j+1).getLift();
+                                refval = sortedDFs.get(j).getMetrics()[1];
+                                refval2 = sortedDFs.get(j+1).getMetrics()[1];
                             } else if(sortingCriteria.equalsIgnoreCase("supp")){
-                                refval = sortedDFs.get(j).getSupport();
-                                refval2 = sortedDFs.get(j+1).getSupport();
+                                refval = sortedDFs.get(j).getMetrics()[0];
+                                refval2 = sortedDFs.get(j+1).getMetrics()[0];
                             } else if(sortingCriteria.equalsIgnoreCase("confave")){
-                                refval = (double) (sortedDFs.get(j).getConfidence() + sortedDFs.get(j).getConfidence2())/2;
-                                refval2 = (double) (sortedDFs.get(j+1).getConfidence() + sortedDFs.get(j+1).getConfidence2())/2;
+                                refval = (double) (sortedDFs.get(j).getMetrics()[2] + sortedDFs.get(j).getMetrics()[3])/2;
+                                refval2 = (double) (sortedDFs.get(j+1).getMetrics()[2] + sortedDFs.get(j+1).getMetrics()[3])/2;
                             } else if(sortingCriteria.equalsIgnoreCase("conf1")){
-                                refval = sortedDFs.get(j).getConfidence();
-                                refval2 = sortedDFs.get(j+1).getConfidence();
+                                refval = sortedDFs.get(j).getMetrics()[2];
+                                refval2 = sortedDFs.get(j+1).getMetrics()[3];
                             } else if(sortingCriteria.equalsIgnoreCase("conf2")){
-                                refval = sortedDFs.get(j).getConfidence2();
-                                refval2 = sortedDFs.get(j+1).getConfidence2();
+                                refval = sortedDFs.get(j).getMetrics()[2];
+                                refval2 = sortedDFs.get(j+1).getMetrics()[3];
                             }
                             
                             if(value <= refval && value > refval2){
@@ -304,6 +315,13 @@ public class DataAnalysisServlet extends HttpServlet {
             String jsonObj = gson.toJson(sortedDFs);
             outputString = jsonObj;
         } 
+        
+        
+        
+        
+        
+        
+        
         else if(requestID.equalsIgnoreCase("buildClassificationTree")){
             
             double support_threshold = Double.parseDouble(request.getParameter("supp"));

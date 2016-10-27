@@ -15,21 +15,32 @@ function getDrivingFeatures() {
     var lift_threshold = d3.select("[id=lift_threshold_input]")[0][0].value;
     var unhighlightedArchs = [];
     var highlightedArchs = [];
-    
+
 //   d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){console.log(d.__data__);})
     d3.selectAll("[class=dot]")[0].forEach(function(d){
-        unhighlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
+        unhighlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs});
     });
     d3.selectAll("[class=dot_clicked]")[0].forEach(function(d){
-        highlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs,inputNames:d.__data__.inputNames,outputNames:d.__data__.outputNames});
+        highlightedArchs.push({inputs:d.__data__.inputs,outputs:d.__data__.outputs});
     });
+    
+    $.ajax({
+        url: "DataAnalysisServlet",
+        type: "POST",
+        data: {ID: "setCandidateFeatures", candidateDrivingFeatures:JSON.stringify(candidateDrivingFeatures), candidateDrivingFeatures_names:JSON.stringify(candidateDrivingFeatures_names)},
+        async: false,
+        success: function (data, textStatus, jqXHR){
+        },
+        error: function (jqXHR, textStatus, errorThrown)
+        {alert("error");}
+    });
+    
 
     $.ajax({
         url: "DataAnalysisServlet",
         type: "POST",
-        data: {ID: "getDrivingFeatures", selected: JSON.stringify(highlightedArchs), unselected:JSON.stringify(unhighlightedArchs),
-            supp:support_threshold,conf:confidence_threshold,lift:lift_threshold,
-            candidateDrivingFeatures:JSON.stringify(candidateDrivingFeatures), candidateDrivingFeatures_names:JSON.stringify(candidateDrivingFeatures_names)},
+        data: {ID: "getDrivingFeatures", inputNames: JSON.stringify(inputNames),outputNames: JSON.stringify(outputNames), selected: JSON.stringify(highlightedArchs), unselected:JSON.stringify(unhighlightedArchs),
+            supp:support_threshold,conf:confidence_threshold,lift:lift_threshold},
         
         async: false,
         success: function (data, textStatus, jqXHR){
@@ -67,20 +78,161 @@ function display_filter_option(){
             .append("p")
             .text("Filter Setting")
             .style("font-size", "18px");
+    
     var filterOptions = archInfoBox.append("div")
             .attr("id","filter_options")
             .style("width","100%")
             .style("height","100%")
             .style("float","left")
             .style("margin-bottom","10px");
+
+    var filterDropdownMenu = d3.select("[id=filter_options]")
+            .append("select")
+            .attr("id","dropdown_presetFilters")
+            .style("width","200px")
+            .style("float","left")
+            .style("margin-left","2px")
+            .style("height","24px");
+
+    filterDropdownMenu.selectAll("option").remove();
+    filterDropdownMenu.selectAll("option")
+            .data(preset_filter_options)
+            .enter()
+            .append("option")
+            .attr("value",function(d){
+                return d.value;
+            })
+            .text(function(d){
+                return d.text;
+            });
+
+    filterOptions.append("button")
+            .attr("id","applyFilterButton_new")
+            .attr("class","filterOptionButtons")
+            .style("margin-left","6px")
+            .style("float","left")
+            .text("Apply new filter");
+    d3.select("[id=filter_options]").append("button")
+            .attr("class","filterOptionButtons")
+            .attr("id","applyFilterButton_add")
+            .style("margin-left","6px")
+            .style("float","left")
+            .text("Add to selection");
+    d3.select("[id=filter_options]").append("button")
+            .attr("id","applyFilterButton_within")
+            .attr("class","filterOptionButtons")
+            .style("margin-left","6px")
+            .style("float","left")
+            .text("Search within selection");
+    d3.select("[id=filter_options]").append("button")
+            .attr("id","addCandidateDF")
+            .attr("class","filterOptionButtons")
+            .style("margin-left","6px")
+            .style("float","left")
+            .text("add to candidate driving feature");
+//
+    d3.select("[id=applyFilterButton_add]").on("click",applyFilter_add);
+    d3.select("[id=applyFilterButton_new]").on("click",applyFilter_new);
+    d3.select("[id=applyFilterButton_within]").on("click",applyFilter_within);
+    d3.select("[id=addCandidateDF]").on("click",addCandidateDF);
+
     var filterOptions_inputs = d3.select("[id=filter_options]").append("div")
             .attr("id","filter_options_inputs")
             .style("width","100%")
-            .style("height","380px")
+            .style("height","300px")
             .style("float","left")
-            .style("overflow","scroll")
-            .style("border","solid black 1px");
-            
+            .style("margin-top","15px")
+            .style("overflow","scroll");
+//            .style("border","solid black 1px");
+
+    d3.select("[id=dropdown_presetFilters]").on("change",function(){
+         presetFilter_open_options();
+    });
+
+}
+
+function presetFilter_open_options(){
+    
+    d3.select("[id=filter_options_inputs]").remove();
+    var filterOptions_inputs = d3.select("[id=filter_options]").append("div")
+            .attr("id","filter_options_inputs")
+            .style("width","100%")
+            .style("height","300px")
+            .style("float","left")
+            .style("margin-top","15px")
+            .style("overflow","scroll");
+    
+    var filterDropdownMenu = d3.select("[id=dropdown_presetFilters]");
+    var selectedOption = filterDropdownMenu[0][0].value;
+    if( selectedOption ==="not_selected"){
+        return;
+    }
+    else if (selectedOption==="pareto_rank_selection"){
+        presetFilter_pareto_rank_selection();
+    }
+    else if (selectedOption==="range_selection"){
+        presetFilter_range_selection();
+    }
+}
+
+function presetFilter_pareto_rank_selection(){
+    var filterInput = d3.select("[id=filter_options_inputs]");
+    
+    filterInput.append("div")
+            .attr("id","filter_input1")
+            .text("Input Pareto Ranking: ");
+
+    filterInput.select("[id=filter_input1]")
+            .append("input")
+            .attr("id","filter_input1_textBox")
+            .attr("type","text");
+    
+    var obj_pref = filterInput.append("div")
+            .attr("id","obj_pref")
+            .style("margin-top","10px");
+
+    var pref_x = obj_pref
+            .append("select")
+            .attr("id","pref_x")
+            .style("width","150px")
+            .style("float","left")
+            .style("margin-left","2px")
+            .style("height","24px");
+    var pref_y = obj_pref
+            .append("select")
+            .attr("id","pref_y")
+            .style("width","150px")
+            .style("float","left")
+            .style("margin-left","7px")
+            .style("height","24px");
+    
+    pref_x.selectAll("option")
+            .data([{value:"not_selected",text:"X-axis Direction"},{value:"max",text:"Larger better"},{value:"min",text:"Smaller Better"}])
+            .enter()
+            .append("option")
+            .attr("value",function(d){
+                return d.value;
+            })
+            .text(function(d){
+                return d.text;
+            });
+    pref_y.selectAll("option")
+            .data([{value:"not_selected",text:"Y-axis Direction"},{value:"max",text:"Larger better"},{value:"min",text:"Smaller Better"}])
+            .enter()
+            .append("option")
+            .attr("value",function(d){
+                return d.value;
+            })
+            .text(function(d){
+                return d.text;
+            });
+}
+
+
+function presetFilter_range_selection(){
+
+    var filterOptions_inputs = d3.select('[id=filter_options_inputs]');
+   
    //Slider Reference:    http://lokku.github.io/jquery-nstslider/     
    
     for (var i=0;i<inputNames.length;i++){
@@ -148,40 +300,6 @@ function display_filter_option(){
             $(this).parent().find('.rightLabel').text(rightValue);
         }
     });
-
-    filterOptions.append("button")
-            .attr("id","applyFilterButton_new")
-            .attr("class","filterOptionButtons")
-            .style("margin-left","6px")
-            .style("margin-top","10px")
-            .style("float","left")
-            .text("Apply new filter");
-    d3.select("[id=filter_options]").append("button")
-            .attr("class","filterOptionButtons")
-            .attr("id","applyFilterButton_add")
-            .style("margin-left","6px")
-            .style("margin-top","10px")
-            .style("float","left")
-            .text("Add to selection");
-    d3.select("[id=filter_options]").append("button")
-            .attr("id","applyFilterButton_within")
-            .attr("class","filterOptionButtons")
-            .style("margin-left","6px")
-            .style("margin-top","10px")
-            .style("float","left")
-            .text("Search within selection");
-    d3.select("[id=filter_options]").append("button")
-            .attr("id","addCandidateDF")
-            .attr("class","filterOptionButtons")
-            .style("margin-left","6px")
-            .style("margin-top","10px")
-            .style("float","left")
-            .text("add to candidate driving feature");
-//
-    d3.select("[id=applyFilterButton_add]").on("click",applyFilter_add);
-    d3.select("[id=applyFilterButton_new]").on("click",applyFilter_new);
-    d3.select("[id=applyFilterButton_within]").on("click",applyFilter_within);
-    d3.select("[id=addCandidateDF]").on("click",addCandidateDF);
 }
 
 
@@ -191,87 +309,120 @@ function applyFilter_new(){
 }
 
 function applyFilter_within(){
+    var filterDropdownMenu = d3.select("[id=dropdown_presetFilters]");
+    var selectedOption = filterDropdownMenu[0][0].value;
+    if (selectedOption==="pareto_rank_selection"){
 
-    var includeVars = [];
-    var thresholds_min = [];
-    var thresholds_max = [];
-    
-    for (var i=0;i<inputNames.length;i++){
-        var varName = inputNames[i];
-        var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
-        includeVars.push(sliderbar_div.select('input')[0][0].checked);
-        thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
-        thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+        calculateParetoRanking();
+        var filterInput = d3.select("[id=filter_input1_textBox]")[0][0].value;
+        var unselectedArchs = d3.selectAll("[class=dot]")[0].forEach(function (d) {
+            var rank = parseInt(d3.select(d).attr("paretoRank"))
+            if (rank < filterInput && rank != -1){
+                d3.select(d).attr("class", "dot_clicked")
+                            .style("fill", "#0040FF");
+            }
+        });
     }
+    if (selectedOption==="range_selection"){
+    
+    
+    
+        var includeVars = [];
+        var thresholds_min = [];
+        var thresholds_max = [];
 
-    d3.selectAll("[class=dot_clicked]")[0].forEach(function (d) {
-        var pass = true;
-        
-        for (var i=0;i<includeVars.length;i++){
-            if (includeVars[i]){
-                var val = d.__data__.inputs[i];
-                if(val >= thresholds_min[i] && val <= thresholds_max[i]){
-                } else {
-                    pass=false;
-                    break;
+        for (var i=0;i<inputNames.length;i++){
+            var varName = inputNames[i];
+            var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
+            includeVars.push(sliderbar_div.select('input')[0][0].checked);
+            thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
+            thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+        }
+
+        d3.selectAll("[class=dot_clicked]")[0].forEach(function (d) {
+            var pass = true;
+
+            for (var i=0;i<includeVars.length;i++){
+                if (includeVars[i]){
+                    var val = d.__data__.inputs[i];
+                    if(val >= thresholds_min[i] && val <= thresholds_max[i]){
+                    } else {
+                        pass=false;
+                        break;
+                    }
                 }
             }
-        }
-        if (pass===true){
-            d3.select(d).attr("class", "dot_clicked")
-                        .style("fill", "#0040FF");
-        } else{
-            d3.select(d).attr("class", "dot")
-                    .style("fill", function (d) {
-                            return "#000000";
-                    });
-        }
-    });
+            if (pass===true){
+                d3.select(d).attr("class", "dot_clicked")
+                            .style("fill", "#0040FF");
+            } else{
+                d3.select(d).attr("class", "dot")
+                        .style("fill", function (d) {
+                                return "#000000";
+                        });
+            }
+        });
+    }
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());  
 }
 
 
 function applyFilter_add(){
+    var filterDropdownMenu = d3.select("[id=dropdown_presetFilters]");
+    var selectedOption = filterDropdownMenu[0][0].value;
+    if (selectedOption==="pareto_rank_selection"){
 
-    var includeVars = [];
-    var thresholds_min = [];
-    var thresholds_max = [];
-    
-    for (var i=0;i<inputNames.length;i++){
-        var varName = inputNames[i];
-        var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
-        includeVars.push(sliderbar_div.select('input')[0][0].checked);
-        thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
-        thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+        calculateParetoRanking();
+        var filterInput = d3.select("[id=filter_input1_textBox]")[0][0].value;
+        var unselectedArchs = d3.selectAll("[class=dot]")[0].forEach(function (d) {
+            var rank = parseInt(d3.select(d).attr("paretoRank"))
+            if (rank < filterInput && rank != -1){
+                d3.select(d).attr("class", "dot_clicked")
+                            .style("fill", "#0040FF");
+            }
+        });
     }
+    if (selectedOption==="range_selection"){
+        var includeVars = [];
+        var thresholds_min = [];
+        var thresholds_max = [];
 
-    var unClickedArchs = d3.selectAll("[class=dot]")[0].forEach(function (d) {
-        var pass = true;
-        
-        for (var i=0;i<includeVars.length;i++){
-            if (includeVars[i]){
-                var val = d.__data__.inputs[i];
-                if(val >= thresholds_min[i] && val <= thresholds_max[i]){
-                } else {
-                    pass=false;
-                    break;
+        for (var i=0;i<inputNames.length;i++){
+            var varName = inputNames[i];
+            var sliderbar_div = d3.select('[id='+ varName +'_sliderbar_div]');
+            includeVars.push(sliderbar_div.select('input')[0][0].checked);
+            thresholds_min.push(sliderbar_div.select('[class=leftLabel]').text());
+            thresholds_max.push(sliderbar_div.select('[class=rightLabel]').text());
+        }
+
+        var unClickedArchs = d3.selectAll("[class=dot]")[0].forEach(function (d) {
+            var pass = true;
+
+            for (var i=0;i<includeVars.length;i++){
+                if (includeVars[i]){
+                    var val = d.__data__.inputs[i];
+                    if(val >= thresholds_min[i] && val <= thresholds_max[i]){
+                    } else {
+                        pass=false;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (pass===true){
-            d3.select(d).attr("class", "dot_clicked")
-                        .style("fill", "#0040FF");
-        }
-    });
+            if (pass===true){
+                d3.select(d).attr("class", "dot_clicked")
+                            .style("fill", "#0040FF");
+            }
+        });
+    }
     
     d3.select("[id=numOfSelectedArchs_inputBox]").attr("value",numOfSelectedArchs());  
 }
 
 
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
-
+//  two options
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "exact:" + value + "]"
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "min:" + value + "/" + "max:" + value + "]"
 function generatePresetCandidateDF(){
     var inputs = jsonObj_scatterPlot[0].inputNames;
     var input_max = [];
@@ -284,12 +435,12 @@ function generatePresetCandidateDF(){
     for (var i=0;i<inputs.length;i++){
         var mid = (input_max[i]-input_min[i])/2 + input_min[i];
         var mid_minus = (input_max[i]-input_min[i])/2 - 0.01 + input_min[i];
-        var expression_low = inputs[i] + "-" + "min:" + input_min[i] + "-" + "max:" + mid_minus;
-        var expression_high = inputs[i] + "-" + "min:" + mid + "-" + "max:" + input_max[i];
+        var expression_low = inputs[i] + "[" + "min:" + input_min[i] + "/" + "max:" + mid_minus + "]";
+        var expression_high = inputs[i] + "[" + "min:" + mid + "/" + "max:" + input_max[i] + "]";
         candidateDrivingFeatures.push(expression_low);
-        candidateDrivingFeatures_names.push(inputs[i] + " low");
+        candidateDrivingFeatures_names.push(inputs[i] + "_low");
         candidateDrivingFeatures.push(expression_high);
-        candidateDrivingFeatures_names.push(inputs[i] + " high");
+        candidateDrivingFeatures_names.push(inputs[i] + "_high");
     }
     
     for(var i=0;i<inputs.length;i++){
@@ -297,21 +448,21 @@ function generatePresetCandidateDF(){
             
             var var1_mid = (input_max[i]-input_min[i])/2 + input_min[i];
             var var1_mid_minus = (input_max[i]-input_min[i])/2 - 0.01 + input_min[i];
-            var var1_expression_low = inputs[i] + "-" + "min:" + input_min[i] + "-" + "max:" + var1_mid_minus;
-            var var1_expression_high = inputs[i] + "-" + "min:" + var1_mid + "-" + "max:" + input_max[i];
+            var var1_expression_low = inputs[i] + "[" + "min:" + input_min[i] + "/" + "max:" + var1_mid_minus + "]";
+            var var1_expression_high = inputs[i] + "[" + "min:" + var1_mid + "/" + "max:" + input_max[i] + "]";
             var var2_mid = (input_max[j]-input_min[j])/2 +input_min[j];
             var var2_mid_minus = (input_max[j]-input_min[j])/2 - 0.01 + input_min[j];
-            var var2_expression_low = inputs[j] + "-" + "min:" + input_min[j] + "-" + "max:" + var2_mid_minus;
-            var var2_expression_high = inputs[j] + "-" + "min:" + var2_mid + "-" + "max:" + input_max[j];
+            var var2_expression_low = inputs[j] + "[" + "min:" + input_min[j] + "/" + "max:" + var2_mid_minus + "]";
+            var var2_expression_high = inputs[j] + "[" + "min:" + var2_mid + "/" + "max:" + input_max[j] + "]";
             
             candidateDrivingFeatures.push(var1_expression_low + " and " + var2_expression_low);
-            candidateDrivingFeatures_names.push(inputs[i] + " low and " + inputs[j] + " low");
+            candidateDrivingFeatures_names.push(inputs[i] + "_low and " + inputs[j] + "_low");
             candidateDrivingFeatures.push(var1_expression_low + " and " + var2_expression_high);
-            candidateDrivingFeatures_names.push(inputs[i] + " low and " + inputs[j] + " high");
+            candidateDrivingFeatures_names.push(inputs[i] + "_low and " + inputs[j] + "_high");
             candidateDrivingFeatures.push(var1_expression_high + " and " + var2_expression_low);
-            candidateDrivingFeatures_names.push(inputs[i] + " high and " + inputs[j] + " low");
+            candidateDrivingFeatures_names.push(inputs[i] + "_high and " + inputs[j] + "_low");
             candidateDrivingFeatures.push(var1_expression_high + " and " + var2_expression_high);
-            candidateDrivingFeatures_names.push(inputs[i] + " high and " + inputs[j] + " high");
+            candidateDrivingFeatures_names.push(inputs[i] + "_high and " + inputs[j] + "_high");
         }
     }
     presetGenerated = true;
@@ -333,22 +484,22 @@ function addCandidateDF(){
     }
     
 //  two options
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "exact:" + value + "]"
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "min:" + value + "/" + "max:" + value + "]"
 
     for (var i=0;i<includeVars.length;i++){
         if (includeVars[i]){
             var varName = inputNames[i];
-
+            
             if(expression==""){
-                expression = varName + "-";
+                expression = varName + "[";
             }else{
-                expression = expression + " and " + varName + "-";
+                expression = expression + " and " + varName + "[";
             }
             if(thresholds_min[i]===thresholds_max[i]){
-                expression = expression + "exact:" + thresholds_min[i];
+                expression = expression + "exact:" + thresholds_min[i] + "]";
             }else{
-                expression = expression + "min:" + thresholds_min[i] + "-" + "max:" + thresholds_max[i];
+                expression = expression + "min:" + thresholds_min[i] + "/" + "max:" + thresholds_max[i] + "]";
             }
         }
     }
@@ -378,10 +529,10 @@ function display_drivingFeatures(source,sortby) {
 
 
     for (var i=0;i<size;i++){
-        lifts.push(source[i].lift);
-        supps.push(source[i].supp);
-        conf1s.push(source[i].conf);
-        conf2s.push(source[i].conf2);
+        lifts.push(source[i].metrics[1]);
+        supps.push(source[i].metrics[0]);
+        conf1s.push(source[i].metrics[2]);
+        conf2s.push(source[i].metrics[3]);
         drivingFeatures.push(source[i]);
         drivingFeatureNames.push(source[i].name);
         drivingFeatureExpressions.push(source[i].expression);
@@ -533,28 +684,28 @@ function display_drivingFeatures(source,sortby) {
             .attr("width", xScale_df(1))
             .attr("y", function(d) { 
                 if(sortby==="lift"){
-                    return yScale_df(d.lift); 
+                    return yScale_df(d.metrics[1]); 
                 } else if(sortby==="supp"){
-                    return yScale_df(d.supp); 
+                    return yScale_df(d.metrics[0]); 
                 }else if(sortby==="confave"){
-                    return yScale_df((d.conf+d.conf2)/2); 
+                    return yScale_df((d.metrics[2]+d.metrics[3])/2); 
                 }else if(sortby==="conf1"){
-                    return yScale_df(d.conf); 
+                    return yScale_df(d.metrics[2]); 
                 }else if(sortby==="conf2"){
-                    return yScale_df(d.conf2); 
+                    return yScale_df(d.metrics[3]); 
                 }
             })
             .attr("height", function(d) { 
                 if(sortby==="lift"){
-                    return height_df - yScale_df(d.lift); 
+                    return height_df - yScale_df(d.metrics[1]); 
                 } else if(sortby==="supp"){
-                    return height_df - yScale_df(d.supp); 
+                    return height_df - yScale_df(d.metrics[0]); 
                 }else if(sortby==="confave"){
-                    return height_df - yScale_df((d.conf+d.conf2)/2); 
+                    return height_df - yScale_df((d.metrics[2]+d.metrics[3])/2); 
                 }else if(sortby==="conf1"){
-                    return height_df - yScale_df(d.conf); 
+                    return height_df - yScale_df(d.metrics[2]); 
                 }else if(sortby==="conf2"){
-                    return height_df - yScale_df(d.conf2); 
+                    return height_df - yScale_df(d.metrics[3]); 
                 }
             })
             .attr("transform",function(d){
@@ -601,10 +752,10 @@ function display_drivingFeatures(source,sortby) {
                     var tmp= d.id;
                     var name = d.name;
                     var expression = d.expression;
-                    var lift = d.lift;
-                    var supp = d.supp;
-                    var conf = d.conf;
-                    var conf2 = d.conf2;
+                    var lift = d.metrics[1];
+                    var supp = d.metrics[0];
+                    var conf = d.metrics[2];
+                    var conf2 = d.metrics[3];
 
                     d3.selectAll("[class=dot]")[0].forEach(function(d){
                         if(evalFeatureExpression(expression,d.__data__)){
@@ -736,19 +887,19 @@ function evalFeatureExpression(expression, d){
     for(var i=0;i<exp_split.length;i++){
         var thisExp = exp_split[i];
 //  two options
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "exact:" + value
-//  index for nsat, nplane, alt, inc, RAAN, or FOV + "-" + "min:" + value + "-" + "max:" + value
-// connected with &
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "exact:" + value + "]"
+//  index for nsat, nplane, alt, inc, RAAN, or FOV + "[" + "min:" + value + "/" + "max:" + value + "]"
             
-        var input_var_name = thisExp.split("-")[0];  
+        var input_var_name = thisExp.split("[")[0];  
         var input_var_index = -1;
         input_var_index = inputNames.indexOf(input_var_name);
         
         var value = + d.inputs[input_var_index]
         
-        for(var j=0;j<thisExp.split("-").length-1;j++){
-            var compare = thisExp.split("-")[j+1].split(":")[0];
-            var threshold = + thisExp.split("-")[j+1].split(":")[1];
+        var condset = thisExp.split("[")[1];
+        for(var j=0;j<thisExp.split("/").length;j++){
+            var compare = thisExp.split("/")[j].split(":")[0];
+            var threshold = + thisExp.split("/")[j].split(":")[1];
             if(!evalSingleFeatureExpression(compare,threshold,value)){
                 return false;
             }
@@ -804,3 +955,84 @@ function viewCandidateFeatures(){
 }
    
    
+function calculateParetoRanking(){      
+    cancelDotSelections();
+    var direction_x = d3.select("[id=pref_x]")[0][0].value;
+    var direction_y = d3.select("[id=pref_y]")[0][0].value;;
+    var x_axis = d3.select("[id=axisOptions_x]")[0][0].value;
+    var y_axis = d3.select("[id=axisOptions_y]")[0][0].value;
+    var x_index = outputNames.indexOf(x_axis);
+    var y_index = outputNames.indexOf(y_axis);
+    
+    function dominates(a1,a2){
+        var x_better = false;
+        var y_better = false;
+        var a1x = a1[x_index];
+        var a1y = a1[y_index];
+        var a2x = a2[x_index];
+        var a2y = a2[y_index];
+        
+        if(direction_x==="min"){
+            if( a1x < a2x ){
+                x_better=true;
+            }else if( a1x > a2x ){
+                return false;
+            }
+        }else{// if direction_x is not specified, the default is maximization    
+            if( a1x > a2x ){
+                x_better=true;
+            }else if( a1x < a2x ){
+                return false;
+            }
+        }
+        if(direction_y==="min"){
+            if( a1y < a2y ){
+                y_better=true;
+            }else if( a1y > a2y ){
+                return false;
+            }
+        }else{// if direction_x is not specified, the default is maximization    
+            if( a1y > a2y ){
+                y_better=true;
+            }else if( a1y < a2y ){
+                return false;
+            }
+        }
+        return x_better == true || y_better == true;
+    }
+
+
+    var rank=0;
+    var archs = d3.selectAll("[class=dot]")[0];
+    while(archs.length > 0){
+        var numArchs = archs.length;
+        rank++;
+
+        if (rank>10){
+            break;
+        }
+        for (var i=0; i<numArchs; i++){
+            var non_dominated = true;
+            var thisArch = archs[i];
+
+            for (var j=0;j<numArchs;j++){
+                if (i==j) continue;
+                if (dominates(archs[j].__data__.outputs , thisArch.__data__.outputs)){
+                    non_dominated = false;
+                    break;
+                }
+            }
+            if (non_dominated == true){
+                d3.select(thisArch).attr("paretoRank",""+rank);
+            }else{
+                d3.select(thisArch).attr("paretoRank","-1");
+            }
+        }
+        
+        archs = d3.selectAll("[class=dot]")[0].filter(function(d){
+            if(d3.select(d).attr("paretoRank")=="-1"){
+                return true;
+            }
+        }); 
+    }
+}

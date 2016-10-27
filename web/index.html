@@ -126,22 +126,25 @@ and open the template in the editor.
         
         <div id="data_file_info_div" style="float:left;width:100%; margin-top: 10px;height: 30px">
             <div style="float:left; margin-left:31px; height: 30px">
-               Data file name: 
-               <input type="text" id="data_file_URL_input" value="C:\Users\Bang\Documents\iFEED_continuous\results\DEMS_dataset.xls" style="width:500px; height: 20px; margin-left: 4px;"/>
+<!--               Data file name: 
+               <input type="text" id="data_file_URL_input" value="C:\Users\Bang\Documents\iFEED_continuous\results\GNC_reduced.csv" style="width:500px; height: 20px; margin-left: 4px;"/>
+               -->
+               <input type="file" id="csvFileInput" onchange="handleFiles(this.files)">
+               
             </div>
             <div style="float:left; margin-left:10px; height: 30px">
                Number of inputs:
-               <input type="text" id="data_file_numInputs" value="7" style="width:40px; height: 20px; margin-left: 3px;"/>
+               <input type="text" id="data_file_numInputs" value="16" style="width:40px; height: 20px; margin-left: 3px;"/>
             </div>
             <div style="float:left; margin-left:10px; height: 30px">
                Number of outputs:
-               <input type="text" id="data_file_numOutputs" value="8" style="width:40px; height: 20px; margin-left: 3px;"/>
+               <input type="text" id="data_file_numOutputs" value="5" style="width:40px; height: 20px; margin-left: 3px;"/>
             </div>
         </div>
  
         
         <div id="options_horizontal" style="width:95%;float:left; margin-left: 30px; margin-top:10px; margin-bottom: 5px; height: 30px">
-            <button id="draw_scatterplot" style="float:left;margin-left:5px;">Draw Scatterplot</button>
+            <button id="draw_scatterplot" style="float:left;margin-left:0px;">Draw Scatterplot</button>
             <div style="float:left; margin-left: 15px">X axis:</div>
             <select id="axisOptions_x" style="width:170px;float:left;margin-left: 5px">
             </select>
@@ -252,6 +255,55 @@ and open the template in the editor.
         <script>
 
 
+var input_csv_data;
+
+function handleFiles(files) {
+    // Check for the various File API support.
+    if (window.FileReader) {
+        // FileReader are supported.
+        getAsText(files[0]);
+    } else {
+        alert('FileReader are not supported in this browser.');
+    }
+}
+function getAsText(fileToRead) {
+    var reader = new FileReader();
+    // Read file into memory as UTF-8      
+    reader.readAsText(fileToRead);
+    // Handle errors load
+    reader.onload = loadHandler;
+    reader.onerror = errorHandler;
+}
+function loadHandler(event) {
+    var csv = event.target.result;
+    processData(csv);
+}
+function processData(csv) {
+    var allTextLines = csv.split(/\r\n|\n/);
+    var lines = [];
+    for (var i=0; i<allTextLines.length; i++) {
+        var data = allTextLines[i].split(',');
+        var tarr = [];
+        for (var j=0; j<data.length; j++) {
+            tarr.push(data[j]);
+        }
+        lines.push(tarr);
+    }
+    input_csv_data=lines;
+//    console.log(lines);
+}
+
+function errorHandler(evt) {
+    if(evt.target.error.name == "NotReadableError") {
+        alert("Canno't read file !");
+    }
+}
+
+
+
+
+
+
 var i_drivingFeatures=0;
 var filter_arch;
 
@@ -283,9 +335,92 @@ var userDefFilters = [];
 // Driving Features
 var color_drivingFeatures = d3.scale.category10();    
 
+// Filter options
+var preset_filter_options  = [{value:'not_selected',text:'Select a Filter'},
+                            {value:'pareto_rank_selection',text:'Pareto Ranking'},
+                            {value:'range_selection',text:'Range selection'}];
+var pareto_ranking_computed = false;
 
 
 try {
+    
+    
+function import_data_csv(){
+    var input_data = input_csv_data;
+    // Imports the data from the data file.
+
+    var numInputs = d3.select('[id=data_file_numInputs]')[0][0].value;
+    var numOutputs = d3.select('[id=data_file_numOutputs]')[0][0].value;
+
+    jsonObj_scatterPlot = [];
+    
+    // First row is the header
+    var header = input_data[0];
+    inputNames = [];
+    outputNames = [];
+    for(var i=0;i<header.length;i++){
+        if(i<numInputs){
+            inputNames.push(header[i]);
+        }else{
+            outputNames.push(header[i]);
+        }
+    }
+    nInputs = inputNames.length;
+    nOutputs = outputNames.length;
+    
+    // Store the rest of the data
+    var nrows = input_data.length;
+    for(var i=1;i<nrows;i++){
+        var row = input_data[i];
+        if(row[0]==""){
+            continue;
+        }
+        for(var j=0;j<row.length;j++){
+            if(row[j]==""){
+                row[j] = 0;
+            }
+        }
+        var outputs = row.splice(nInputs);
+        var inputs = row;
+        jsonObj_scatterPlot.push({inputs:inputs,outputs:outputs,inputNames:inputNames,outputNames:outputNames});
+    }
+
+    d3.select("[id=axisOptions_x]").selectAll("option").remove();
+    d3.select("[id=axisOptions_y]").selectAll("option").remove();
+    presetGenerated = false
+    translate_tmp = [0,0];
+    scale_tmp = 0;
+    translate_tmp_local = [0,0];
+    scale_tmp_local = 0;
+    candidateDrivingFeatures = [];
+    candidateDrivingFeatures_names = [];
+    userDefFilterExpressionHistory = [];
+    userDefFilters = [];
+
+    d3.select("[id=axisOptions_x]").selectAll("option")
+            .data(outputNames)
+            .enter()
+            .append("option")
+            .attr("value",function(d){
+                return d
+            })
+            .text(function(d){return d});
+    d3.select("[id=axisOptions_y]").selectAll("option")
+            .data(outputNames)
+            .enter()
+            .append("option")
+            .attr("value",function(d){
+                return d
+            })
+            .text(function(d){return d});
+
+    reset_drawing_scatterPlot();
+    draw_scatterPlot(jsonObj_scatterPlot);
+    d3.select("[id=basicInfoBox_div]").select("g").remove();
+
+     
+}
+    
 
 function import_data(){
     // Imports the data from the data file.
@@ -297,7 +432,7 @@ function import_data(){
             {
                 url: "DataFileServlet",
                 type: "POST",
-                data: {ID: "import_data",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
+                data: {ID: "import_data_csv",path:data_file_URL_input,numInputs:numInputs,numOutputs:numOutputs},
                 async: false,
                 success: function (data, textStatus, jqXHR)
                 {
@@ -358,6 +493,16 @@ function draw_archBasicInfoTable(data) {
     var archInfoBox = d3.select("[id=basicInfoBox_div]")
             .select("g");
 
+
+
+
+    
+
+
+
+
+////////////////////////////////////////////////////////////
+
     var input_table = archInfoBox.append("table")
             .attr("id", "archInfo_input_table")
             .style("float","left")
@@ -368,10 +513,11 @@ function draw_archBasicInfoTable(data) {
             .style("margin-right","10px");
 
     var columns = [];
-    for(var i=0;i<inputNames.length;i++){
-        columns.push({columnName:inputNames[i]});
-    }
-    
+    columns.push({columnName: "Input"});
+    columns.push({columnName: "Value"});
+    columns.push({columnName: "Input"});
+    columns.push({columnName: "Value"});
+
 
     // create table header
     input_table.append('thead').append('tr')
@@ -388,20 +534,38 @@ function draw_archBasicInfoTable(data) {
             .style("border","1px solid black")
             .style("font-size", "20px");
 
+    var rows = [];
+    if (inputNames.length % 2 == 0){
+        num = inputNames.length/2;
+    }else{
+        num  = inputNames.length/2 + 1;
+    }
+    for(var i=0;i<num;i++){
+        rows.push({name1:inputNames[2*i],val1:data.inputs[2*i],name2:inputNames[2*i+1],val2:data.inputs[2*i+1]});
+    }
+    
     // create table body
     input_table.append('tbody')
+            .selectAll('tr')
+            .data(rows)
+            .enter()
             .append('tr')
             .selectAll('td')
-            .data(data.inputs)
+            .data(function(row,i){
+                var thisRow = [];
+                thisRow.push({content:row.name1});
+                thisRow.push({content:row.val1});
+                thisRow.push({content:row.name2});
+                thisRow.push({content:row.val2});
+                return thisRow;
+            })
             .enter()
             .append('td')
-            .text(function (d) {
-                return d;
+            .text(function(d){
+                return d.content;
             })
-            .attr("width","80px")
             .style("border","1px solid black")
             .style("font-size", "18px");
-
 
     var output_table = archInfoBox.append("table")
                                     .attr("id", "archInfo_output_table")
@@ -475,7 +639,8 @@ function numOfSelectedArchs(){
 }
 
 
-d3.select("[id=draw_scatterplot]").on("click", import_data);
+//d3.select("[id=draw_scatterplot]").on("click", import_data);
+d3.select("[id=draw_scatterplot]").on("click", import_data_csv);
 
 
 
